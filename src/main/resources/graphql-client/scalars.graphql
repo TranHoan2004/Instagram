@@ -1,4 +1,0 @@
-scalar Date
-  @specifiedBy(url:
-    "https://tools.ietf.org/html/rfc3339"
-  )
