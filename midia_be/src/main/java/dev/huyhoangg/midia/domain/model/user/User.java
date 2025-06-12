@@ -1,0 +1,65 @@
+package dev.huyhoangg.midia.domain.model.user;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import dev.huyhoangg.midia.dgraph.annotation.DgraphNode;
+import dev.huyhoangg.midia.dgraph.annotation.DgraphPredicate;
+import dev.huyhoangg.midia.dgraph.annotation.Relationship;
+import dev.huyhoangg.midia.domain.model.DgraphBaseModel;
+import lombok.*;
+
+import java.time.Instant;
+import java.util.Set;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@ToString
+@DgraphNode
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class User extends DgraphBaseModel {
+    @DgraphPredicate("id")
+    private String id; // uuid
+    @DgraphPredicate("user.user_name")
+    private String userName;
+
+    @DgraphPredicate("user.profile")
+    @Relationship
+    private UserProfile profile;
+
+    @DgraphPredicate("user.email")
+    private String email;
+
+    @DgraphPredicate("user.password")
+    private String password;
+
+    @DgraphPredicate("user.stats")
+    @Relationship(eagerFetch = true)
+    private UserStats stats;
+
+    @DgraphPredicate("user.role")
+    @Relationship(eagerFetch = true)
+    private Role role;
+
+    @DgraphPredicate("user.followings")
+    @Relationship
+    private Set<User> followings;
+
+    @DgraphPredicate("user.followers")
+    @Relationship
+    private Set<User> followers;
+
+    @DgraphPredicate("user.is_locked")
+    @Builder.Default
+    private Boolean isLocked = false;
+
+    @DgraphPredicate("created_at")
+    private Instant createdAt;
+
+    @DgraphPredicate("updated_at")
+    private Instant updatedAt;
+
+    @DgraphPredicate("deleted_at")
+    private Instant deletedAt;
+}

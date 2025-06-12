@@ -1,0 +1,7 @@
+directive @Email(message: String = "graphql.validation.Email.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @NotBlank(message: String = "graphql.validation.NotBlank.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @Past(message: String = "graphql.validation.Past.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @Min(value: Int = 0, message: String = "graphql.validation.Min.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
