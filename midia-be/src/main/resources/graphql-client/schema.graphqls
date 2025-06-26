@@ -1,0 +1,125 @@
+type Mutation {
+    # Common
+    registerUser(input: RegisterUserInput!): RegisterUserResp
+    # Auth
+    introspect(token: String): IntrospectResp
+    login(input: LoginInput!): LoginResp
+    refreshToken(refreshToken: String): RefreshTokenResp
+    logout(accessToken: String, refreshToken: String): String
+    # Post
+    createPost(input: CreatePostInput!): Post
+}
+
+type Query {
+    me: User
+    userProfile(id: String!): UserProfile
+    users: [User]
+    searchUser(params: String): [SearchedUser]
+    getAllUsers: [User]
+    # Post
+    posts(authorId: ID!): [Post!]
+}
+
+type User {
+    id: ID!
+    username: String!
+    role: String!
+    profile: UserProfile
+    email: String
+    stats: UserStats
+    followers: [User!]
+    followings: [User!]
+}
+
+type UserProfile {
+    fullName: String!
+    phoneNumber: String
+    birthDate: String
+    bio: String
+    avatarUrl: String
+}
+
+type UserStats {
+    totalFollowings: Int!
+    totalFollowers: Int!
+    totalPosts: Int!
+}
+
+input RegisterUserInput {
+    username: String! @NotBlank(message: "Username must not be blank")
+    firstName: String! @NotBlank(message: "First name must not be blank")
+    lastName: String!
+    email: String! @Email(message: "Invalid email address")
+    password: String! @Min(value: 8, message: "Password must be at least 8 characters long")
+    dob: Date! @Past
+}
+
+type RegisterUserResp {
+    id: String!
+    message: String
+}
+
+input LoginInput {
+    emailOrUsername: String!
+    password: String!
+}
+
+type LoginResp {
+    accessToken: String!
+    accessTokenExpiresIn: String!
+    refreshToken: String!
+    refreshTokenExpiresIn: String!
+    message: String
+}
+
+type RefreshTokenResp {
+    accessToken: String!
+    accessTokenExpiresIn: String!
+    message: String
+}
+
+type IntrospectResp {
+    isValid: Boolean!
+}
+
+enum PostVisibility {
+    PUBLIC
+    PRIVATE
+    FRIENDS_ONLY
+}
+
+type Attachment {
+    id: ID!
+    title: String
+    description: String
+    originalLink: String!
+    optimizedLinks: [String!]
+    createdAt: String!
+    updatedAt: String
+    deletedAt: String
+}
+
+type Post {
+    id: ID!
+    caption: String
+    visibility: PostVisibility!
+    author: User!
+    attachments: [Attachment!]
+    createdAt: String!
+    updatedAt: String
+    deletedAt: String
+}
+
+input CreatePostInput {
+    caption: String
+    visibility: PostVisibility = PUBLIC
+    attachmentIds: [ID!]!
+}
+
+type SearchedUser {
+    id: ID!
+    username: String!
+    avatar: String
+    fullName: String
+}
+

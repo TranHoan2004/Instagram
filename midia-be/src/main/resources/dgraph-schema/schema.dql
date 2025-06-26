@@ -1,0 +1,95 @@
+<created_at>: datetime .
+<deleted_at>: datetime @index(hour) .
+<id>: string @index(hash) @upsert .
+<permission.action>: string .
+<role.name>: string @index(hash) .
+<role.permissions>: [uid] .
+<updated_at>: datetime .
+<user.email>: string @index(hash) .
+<user.followers>: [uid] .
+<user.followings>: [uid] .
+<user.is_locked>: bool .
+<user.is_email_verified>: bool .
+<user.password>: string .
+<user.profile>: uid .
+<user.role>: uid .
+<user.stats>: uid .
+<user.user_name>: string @index(trigram) .
+<user_profile.avatar_url>: string .
+<user_profile.bio>: string .
+<user_profile.dob>: datetime .
+<user_profile.full_name>: string .
+<user_profile.phone_number>: string .
+<user_stats.total_followers>: int .
+<user_stats.total_followings>: int .
+<user_stats.total_posts>: int .
+<post.caption>: string .
+<post.visibility>: string .
+<author>: uid .
+<attachments>: [uid] .
+<attachment.title>: string .
+<attachment.description>: string .
+<attachment.original_link>: string .
+<attachment.optimized_links>: [string] .
+
+type <Attachment> {
+    id
+    attachment.title
+    attachment.description
+    attachment.original_link
+    attachment.optimized_links
+    created_at
+    updated_at
+    deleted_at
+}
+
+type <Permission> {
+	permission.action
+}
+
+type <Post> {
+	created_at
+	deleted_at
+	id
+	updated_at
+	post.caption
+	post.visibility
+	author
+	attachments
+}
+
+type <Role> {
+	role.name
+	role.permissions
+}
+
+type <User> {
+	updated_at
+	id
+	user.user_name
+	deleted_at
+	created_at
+	user.followers
+	user.followings
+	user.is_locked
+	user.is_email_verified
+	user.password
+	user.email
+	user.role
+	user.stats
+	user.profile
+}
+
+type <UserProfile> {
+	user_profile.full_name
+	user_profile.phone_number
+	user_profile.dob
+	user_profile.avatar_url
+	user_profile.bio
+}
+
+type <UserStats> {
+	user_stats.total_followers
+	user_stats.total_followings
+	user_stats.total_posts
+}
