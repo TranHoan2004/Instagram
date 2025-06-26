@@ -1,17 +1,22 @@
+import type { Post } from '~/lib/types'
 import ProfileThumbnail from './ProfileThumbnail'
 
 interface ProfileGridProps {
-  posts: { id: string; imageUrl: string; altText: string }[]
+  posts: Post[]
+  onPostClick: (post: Post, idx: number) => void
 }
 
-const ProfileGrid = ({ posts }: ProfileGridProps) => {
+const ProfileGrid = ({ posts, onPostClick }: ProfileGridProps) => {
   return (
     <div className="grid grid-cols-3 gap-0.5 md:gap-1">
-      {posts.map((post) => (
+      {posts.map((post, idx) => (
         <ProfileThumbnail
           key={post.id}
-          src={post.imageUrl}
-          alt={post.altText}
+          src={Array.isArray(post.image) ? post.image[0] : post.image}
+          alt={post.caption}
+          likes={post.likes}
+          comments={post.comments.length}
+          onClick={() => onPostClick(post, idx)}
         />
       ))}
     </div>

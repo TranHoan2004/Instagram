@@ -15,11 +15,10 @@ import type { Post } from '~/lib/types'
 import PostImageCarousel from './PostImageCarousel'
 import Avatar from '../ui/Avatar'
 
-const PostCard = ({ post }: { post: Post }) => {
+const PostCard = ({ post, onOpenComments }: { post: Post; onOpenComments: () => void }) => {
   const [isLiked, setIsLiked] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [commentText, setCommentText] = useState('')
-  const [showComments, setShowComments] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleEmojiSelect = (emoji: string) => {
@@ -84,7 +83,7 @@ const PostCard = ({ post }: { post: Post }) => {
               )}
             </span>
             <span
-              onClick={() => setShowComments(!showComments)}
+              onClick={onOpenComments}
               className="cursor-pointer hover:scale-110 active:scale-95 transition-transform"
             >
               <ChatBubbleLeftIcon className="w-7 h-7 hover:text-blue-500" />
@@ -104,6 +103,7 @@ const PostCard = ({ post }: { post: Post }) => {
 
         <div className="w-full space-y-3">
           <p className="text-sm font-bold text-gray-900 dark:text-white">
+            {/* This line cause hydration mismatch. Fix it later */}
             {(post.likes + (isLiked ? 1 : 0)).toLocaleString()} likes
           </p>
           <p className="text-sm text-gray-800 dark:text-gray-200">
@@ -113,21 +113,12 @@ const PostCard = ({ post }: { post: Post }) => {
             {post.caption}
           </p>
 
-          {post.comments.length >= 0 && (
-            <span
-              onClick={() => setShowComments(!showComments)}
-              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer"
-            >
-              {showComments ? 'Hide' : 'View all'} {post.comments.length}{' '}
-              comments
-            </span>
-          )}
-
-          {showComments && (
-            <div className="text-sm text-gray-600 dark:text-gray-400 p-3 rounded-lg animate-fadeIn">
-              Comments section would appear here...
-            </div>
-          )}
+          <span
+            onClick={onOpenComments}
+            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer"
+          >
+            View all {post.comments.length} comments
+          </span>
 
           <div className="flex items-center gap-3 pt-2">
             <Textarea
@@ -146,9 +137,8 @@ const PostCard = ({ post }: { post: Post }) => {
               minRows={1}
               maxRows={3}
               classNames={{
-                input:
-                  'text-sm bg-transparent border-0 outline-none ring-0 text-gray-800 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400',
-                inputWrapper: 'bg-transparent shadow-none px-0'
+                input: 'text-sm',
+                inputWrapper: '!bg-transparent !shadow-none px-0'
               }}
             />
             {commentText.trim() && (

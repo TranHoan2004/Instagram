@@ -1,21 +1,27 @@
 import { useState } from 'react'
 import {
-  EllipsisHorizontalIcon,
   HomeIcon,
-  MagnifyingGlassIcon,
-  PlusCircleIcon
+  PlusCircleIcon,
+  Cog6ToothIcon,
+  ChatBubbleLeftIcon,
+  FireIcon,
+  PhotoIcon,
+  Bars3Icon
 } from '@heroicons/react/24/outline'
 import {
   HomeIcon as HomeIconSolid,
-  MagnifyingGlassIcon as MagnifyingGlassIconSolid,
-  PlusCircleIcon as PlusCircleIconSolid,
-  EllipsisHorizontalIcon as EllipsisHorizontalIconSolid
+  Cog6ToothIcon as Cog6ToothIconSolid,
+  ChatBubbleLeftIcon as ChatBubbleLeftIconSolid,
+  FireIcon as FireIconSolid,
+  PhotoIcon as PhotoIconSolid,
+  Bars3Icon as Bars3IconSolid
 } from '@heroicons/react/24/solid'
 import NavigationItem from '../../ui/NavigationItem'
-import CreatePostModal from './CreatePostModal'
+import CreatePostModal from '~/routes/_main.create-post/CreatePostModal'
+import { Avatar } from '@heroui/react'
 
 const LeftSidebar = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const navigationItems = [
     {
@@ -25,37 +31,71 @@ const LeftSidebar = () => {
       path: '/'
     },
     {
-      icon: <MagnifyingGlassIcon className="size-6 min-w-[1.5rem]" />,
-      activeIcon: (
-        <MagnifyingGlassIconSolid className="size-6 min-w-[1.5rem]" />
-      ),
-      label: 'Explore',
-      path: '/explore'
-    },
-    {
       icon: <PlusCircleIcon className="size-6 min-w-[1.5rem]" />,
-      activeIcon: <PlusCircleIconSolid className="size-6 min-w-[1.5rem]" />,
       label: 'Create',
       onClick: () => setIsModalOpen(true)
     },
     {
+      icon: <FireIcon className="size-6 min-w-[1.5rem]" />,
+      activeIcon: <FireIconSolid className="size-6 min-w-[1.5rem]" />,
+      label: 'Explore',
+      path: '/explore'
+    },
+    {
+      icon: <ChatBubbleLeftIcon className="size-6 min-w-[1.5rem]" />,
+      activeIcon: <ChatBubbleLeftIconSolid className="size-6 min-w-[1.5rem]" />,
+      label: 'Messages',
+      path: '/messages'
+    },
+    {
+      icon: <PhotoIcon className="size-6 min-w-[1.5rem]" />,
+      activeIcon: <PhotoIconSolid className="size-6 min-w-[1.5rem]" />,
+      label: 'Activities',
+      path: '/your-activity'
+    },
+
+    {
       icon: (
-        <EllipsisHorizontalIcon className="size-6 min-w-[1.5rem] stroke-2" />
+        <Avatar
+          className="size-6 min-w-[1.5rem]"
+          src="https://i.pravatar.cc/150?img=1"
+        />
       ),
       activeIcon: (
-        <EllipsisHorizontalIconSolid className="size-6 min-w-[1.5rem] stroke-2" />
+        <Avatar
+          className="size-6 min-w-[1.5rem]"
+          src="https://i.pravatar.cc/150?img=1"
+        />
+      ),
+      label: 'Profile',
+      path: '/profile'
+    }
+  ];
+
+ const bottomNavigationItems = [
+    {
+      icon: <Cog6ToothIcon className="size-6 min-w-[1.5rem]" />,
+      activeIcon: <Cog6ToothIconSolid className="size-6 min-w-[1.5rem]" />,
+      label: 'Setting',
+      path: '/setting'
+    },
+    {
+      icon: (
+        <Bars3Icon className="size-6 min-w-[1.5rem] stroke-2" />
+      ),
+      activeIcon: (
+        <Bars3IconSolid className="size-6 min-w-[1.5rem] stroke-2" />
       ),
       label: 'More',
       path: '/#'
     }
-  ]
+  ];
 
   return (
     <>
-      <aside className="sticky top-[60px] left-0 h-screen w-16 md:w-[clamp(180px,calc(180px+((100vw-1600px)*0.46875)),300px)] bg-neutral-100 dark:bg-neutral-900 py-6 overflow-y-auto">
-
-        <nav className="flex flex-col">
-          <ul className="flex flex-col gap-4">
+      <aside className="sticky top-[60px] left-0 h-[calc(100vh-60px)] w-16 md:w-[clamp(180px,calc(180px+((100vw-1600px)*0.46875)),300px)] py-6 overflow-y-auto">
+        <nav className="flex flex-col h-full">
+          <ul className="flex flex-col gap-4 flex-grow">
             {navigationItems.map((item) => (
               <li key={item.label}>
                 <NavigationItem
@@ -68,6 +108,18 @@ const LeftSidebar = () => {
               </li>
             ))}
           </ul>
+          <ul className="flex flex-col gap-4 pt-4">
+            {bottomNavigationItems.map((item) => (
+              <li key={item.label}>
+                <NavigationItem
+                  icon={item.icon}
+                  activeIcon={item.activeIcon}
+                  label={item.label}
+                  path={item.path || ''}
+                />
+              </li>
+            ))}
+          </ul>
         </nav>
       </aside>
 
@@ -76,7 +128,8 @@ const LeftSidebar = () => {
         onClose={() => setIsModalOpen(false)}
       />
     </>
-  )
-}
+  );
+};
 
-export default LeftSidebar
+export default LeftSidebar;
+

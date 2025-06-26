@@ -1,6 +1,6 @@
-import { Setting } from '~/components/setting/Setting'
+import Sample from './Sample'
 
 const SamplePage = () => {
-  return <Setting />
+  return <Sample />
 }
 export default SamplePage

@@ -1,3 +1,13 @@
+### GraphQL Notes:
+
+If you want to use query or mutation that need authentication, add the requiresAuth to the query/mutation context:
+e.g:
+useQuery(MY_QUERY, {
+context: {
+requiresAuth: true
+}
+})
+
 ### Basic setup
 
 1. **Install Dependencies**:

@@ -6,7 +6,7 @@ import RightSidebar from '~/components/layout/right-nav/RightSidebar';
 
 const MainLayout = () => {
   return (
-    <div className="flex min-h-screen bg-neutral-100 dark:bg-neutral-900">
+    <div className="flex min-h-screen">
       <style>{`
         :root {
           --left-sidebar-width: 4rem;
@@ -26,7 +26,7 @@ const MainLayout = () => {
       {/* Main Content + Header */}
       <div className="flex flex-col flex-1 min-w-0">
         <Header />
-        <main className="flex-1 px-4 md:px-8 py-6 mt-[60px] w-full max-w-[1000px] mx-auto">
+        <main className="flex-1 mt-[60px] w-full">
           <Outlet />
         </main>
       </div>

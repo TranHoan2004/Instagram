@@ -1,12 +1,11 @@
-import type { MetaFunction } from 'react-router'
+import { useState } from 'react'
 import PostCard from '~/components/post/PostCard'
+import PostDetailModal from '~/components/post/PostDetailModal'
 import type { Post } from '~/lib/types'
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'Midia' }]
-}
 
 const NewsFeedPage = () => {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const posts: Post[] = [
     {
       id: '1',
@@ -25,7 +24,7 @@ const NewsFeedPage = () => {
       ],
       likes: 741368,
       caption: 'Parabéns Ayrton, minha inspiração sempre 🏁',
-      comments: [],
+      comments: []
     },
     {
       id: '2',
@@ -41,7 +40,7 @@ const NewsFeedPage = () => {
         'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&h=600&fit=crop',
       likes: 89234,
       caption: 'String Theory explained in simple terms 🧵⚛️',
-      comments: [],
+      comments: []
     },
     {
       id: '3',
@@ -56,7 +55,7 @@ const NewsFeedPage = () => {
         'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=600&fit=crop',
       likes: 156789,
       caption: 'The beauty of untouched wilderness 🏔️',
-      comments: [],
+      comments: []
     },
     {
       id: '4',
@@ -71,15 +70,30 @@ const NewsFeedPage = () => {
         'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=600&h=600&fit=crop',
       likes: 234567,
       caption: 'Another successful launch! 🚀',
-      comments: [],
+      comments: []
     }
   ]
 
   return (
     <div className="max-w-xl mx-auto">
-      {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
+      {posts.map((post, index) => (
+        <PostCard
+          key={post.id}
+          post={post}
+          onOpenComments={() => setSelectedIndex(index)}
+        />
       ))}
+    {selectedIndex !== null &&
+          <PostDetailModal
+        isOpen={selectedIndex !== null}
+        onClose={() => setSelectedIndex(null)}
+        post={posts[selectedIndex]}
+        posts={posts}
+        selectedIndex={selectedIndex || 0}
+        setSelectedIndex={setSelectedIndex}
+      />
+    }
+
     </div>
   )
 }

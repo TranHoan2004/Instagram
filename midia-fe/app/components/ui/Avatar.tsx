@@ -10,6 +10,7 @@ interface AvatarProps {
   onActionClick?: () => void
   timestamp?: string
   hideFollow?: boolean
+  isBordered?: boolean
 }
 
 const Avatar = ({
@@ -20,7 +21,8 @@ const Avatar = ({
   timestamp,
   isFollowing,
   onActionClick,
-  hideFollow
+  hideFollow,
+  isBordered = false
 }: AvatarProps) => {
   const onFollowClick = () => {
     onActionClick?.()
@@ -30,18 +32,16 @@ const Avatar = ({
     <div className="flex gap-3 items-center">
       <div className="relative group cursor-pointer">
         <HAvatar
-          isBordered
+          isBordered={isBordered}
           radius="full"
           size="md"
           src={avatar}
-          className="hover:ring-2 group-hover:ring-blue-500"
+          className={`${isBordered && 'hover:ring-2 group-hover:ring-blue-500'} `}
         />
       </div>
       <div>
         <div className="flex items-center gap-1">
-          <h4 className="text-sm font-bold cursor-pointer">
-            {username}
-          </h4>
+          <h4 className="text-sm font-bold cursor-pointer">{username}</h4>
           {isVerified && (
             <CheckBadgeIcon className="w-3.5 h-3.5 text-[#0095F6]" />
           )}

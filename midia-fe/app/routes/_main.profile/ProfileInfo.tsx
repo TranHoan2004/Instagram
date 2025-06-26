@@ -1,5 +1,5 @@
-import { Avatar, Button } from '@heroui/react'
 import { Cog6ToothIcon } from '@heroicons/react/24/outline'
+import { Button } from '@heroui/react'
 
 interface ProfileInfoProps {
   username: string
@@ -32,10 +32,8 @@ const ProfileInfo = ({
   return (
     <div className="flex flex-col md:flex-row items-center md:items-start md:gap-20 gap-10 mb-10">
       {/* Profile Picture (Left Column) */}
-      <div className="flex-shrink-0 w-28 h-28 md:w-40 md:h-40 flex items-center justify-center rounded-full">
-        <Avatar
-          isBordered
-          color="danger"
+      <div className="flex-shrink-0 w-28 h-28 md:w-40 md:h-40 flex items-center justify-center rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700">
+        <img
           src={profileImageUrl}
           alt={`${username}'s profile`}
           className="w-full h-full object-cover"
@@ -46,10 +44,10 @@ const ProfileInfo = ({
       <div className="flex flex-col flex-grow items-center md:items-start gap-4">
         <div className="flex items-center gap-4">
           <h2 className="text-xl md:text-2xl font-light">{username}</h2>
-          <Button color="default" size="sm" className="rounded font-semibold">
+          <Button variant="flat" size="md">
             Edit profile
           </Button>
-          <Button color="default" size="sm" className="rounded font-semibold">
+          <Button variant="flat" size="md">
             View Archive
           </Button>
           {/* Settings Icon */}

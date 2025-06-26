@@ -1,6 +1,6 @@
 export interface User {
   id: string
-  name: string
+  userName: string
   email: string
   role: string
 }
@@ -32,7 +32,7 @@ export interface Comment {
   mentions?: string[]
   timestamp?: string
   likes?: number
-  isLiked?: boolean
+  isLiked: boolean
 }
 
 export interface AvatarProps {

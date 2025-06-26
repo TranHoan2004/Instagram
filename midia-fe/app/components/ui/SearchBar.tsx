@@ -19,15 +19,15 @@ const SearchBar = () => {
       variant="bordered"
       size="sm"
       radius="full"
-      startContent={<MagnifyingGlassIcon className="size-6 text-gray-400" />}
+      startContent={<MagnifyingGlassIcon className="size-6" />}
       className="relative"
       classNames={{
         base: 'w-full min-w-0 max-w-sm',
         innerWrapper: 'px-3 py-1.5',
         input:
-          'text-sm bg-transparent text-gray-800 dark:text-gray-100 placeholder:text-gray-400',
+          'text-sm bg-transparent',
         inputWrapper:
-          'border border-foreground-400 bg-transparent shadow-none after:bg-transparent data-[hover=true]:bg-transparent group-data-[focus=true]:bg-transparent px-0 py-0 min-h-0 h-auto'
+          'bg-transparent shadow-none after:bg-transparent data-[hover=true]:bg-transparent group-data-[focus=true]:bg-transparent px-0 py-0 min-h-0 h-auto'
       }}
       aria-label="Search"
     />

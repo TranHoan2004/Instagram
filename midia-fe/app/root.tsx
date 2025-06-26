@@ -10,6 +10,7 @@ import {
 import type { Route } from './+types/root'
 import './app.css'
 import { Providers } from './providers'
+import type { MetaFunction } from 'react-router'
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -28,8 +29,16 @@ export const links: Route.LinksFunction = () => [
     as: 'font',
     type: 'font/otf',
     crossOrigin: 'anonymous'
+  },
+    {
+    rel: 'icon',
+    href: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRazMwVsbNCUPn4kCU8khY4mjuoDwIA-uGaCQ&s',
+    type: 'image/x-icon'
   }
 ]
+export const meta: MetaFunction = () => {
+  return [{ title: 'Midia' }]
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (

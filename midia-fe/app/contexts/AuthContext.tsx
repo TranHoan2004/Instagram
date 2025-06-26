@@ -1,11 +1,11 @@
 import { createContext, use, useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { User } from '~/lib/types'
-import type { RootState } from '~/redux/store'
 import {
   signIn as signInAction,
   signOut as signOutAction
 } from '~/redux/auth-slice'
+import type { RootState } from '~/redux/store'
 
 interface AuthContextInterface {
   user: User | null
@@ -24,7 +24,7 @@ interface AuthProviderProps {
   initialUser?: User | null
 }
 
-export const AuthProvider = ({ children, initialUser }: AuthProviderProps) => {
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const dispatch = useDispatch()
   const user = useSelector((state: RootState) => state.auth.user)
   const isAuthenticated = useSelector(

@@ -28,12 +28,12 @@ const NavigationItem = ({
     <button
       onClick={onClick || handleClick}
       className={cn(
-        'flex cursor-pointer items-center justify-center md:justify-start gap-4 w-full md:px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-700'
+        'flex cursor-pointer items-center justify-center md:justify-start gap-4 w-full md:px-4 py-3 rounded-lg '
       )}
       type="button"
     >
       {isActive ? activeIcon : icon}
-      <span className="text-lg hidden lg:inline">{label}</span>
+      <span className={`${isActive ? 'font-semibold' : 'font-normal'} text-md hidden md:inline`}>{label}</span>
     </button>
   )
 }

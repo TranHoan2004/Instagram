@@ -1,7 +1,5 @@
-import { Image, Link } from '@heroui/react'
+import { Link } from '@heroui/react'
 import SignUpForm from './SignUpForm'
-import BrandLogo from '~/components/ui/BrandLogo'
-import ThemeSwitcher from '~/components/layout/header/ThemeSwitcher'
 import type { MetaFunction } from 'react-router'
 
 export const meta: MetaFunction = () => {

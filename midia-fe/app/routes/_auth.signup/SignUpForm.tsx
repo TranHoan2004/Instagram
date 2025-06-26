@@ -1,7 +1,6 @@
 import { gql, useMutation } from '@apollo/client/index.js'
 import { CalendarIcon } from '@heroicons/react/24/outline'
 import {
-  addToast,
   Button,
   DateInput,
   Form,
@@ -25,7 +24,7 @@ const schema = z.object({
   password: z
     .string()
     .min(8, { message: 'Password must be at least 8 characters long' }),
-  userName: z
+  username: z
     .string()
     .min(3, { message: 'Username must be at least 3 characters long' }),
   firstName: z.string().min(1, { message: 'First name is required' }),
@@ -66,7 +65,7 @@ const SignUpForm = () => {
       password: '',
       firstName: '',
       lastName: '',
-      userName: '',
+      username: '',
       dob: null
     }
   })
@@ -82,20 +81,14 @@ const SignUpForm = () => {
     register({
       variables: { input: data },
       onCompleted: () => {
-        addToast({
-          title: 'Success',
-          description:
-            'Sign up successfully. Please check your email to verify your account',
-          color: 'success'
-        })
-
-        setTimeout(() => navigate('/signin'), 6000)
+        sessionStorage.setItem('verify-email', data.email)
+        navigate('/email-verify')
       }
     })
   }
 
   return (
-    <Form className='w-full max-w-lg' onSubmit={handleSubmit(onSubmit)}>
+    <Form className="w-full max-w-lg" onSubmit={handleSubmit(onSubmit)}>
       <div className="grid grid-cols-2 gap-2 w-full">
         <Controller
           control={control}
@@ -187,7 +180,7 @@ const SignUpForm = () => {
 
       <Controller
         control={control}
-        name="userName"
+        name="username"
         render={({
           field: { name, value, onChange, onBlur, ref },
           fieldState: { invalid, error }
