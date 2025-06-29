@@ -7,15 +7,14 @@ type Mutation {
     refreshToken(refreshToken: String): RefreshTokenResp
     logout(accessToken: String, refreshToken: String): String
     # Post
-    createPost(input: CreatePostInput!): Post
+    createPost(input: CreatePostInput!): CreatePostResp
 }
 
 type Query {
     me: User
     userProfile(id: String!): UserProfile
     users: [User]
-    searchUser(params: String): [SearchedUser]
-    getAllUsers: [User]
+    searchUser(params: String): [SearchUserResp]
     # Post
     posts(authorId: ID!): [Post!]
 }
@@ -116,10 +115,15 @@ input CreatePostInput {
     attachmentIds: [ID!]!
 }
 
-type SearchedUser {
+type CreatePostResp {
+    post: Post!
+    message: String
+}
+
+
+type SearchUserResp {
     id: ID!
     username: String!
     avatar: String
     fullName: String
 }
-

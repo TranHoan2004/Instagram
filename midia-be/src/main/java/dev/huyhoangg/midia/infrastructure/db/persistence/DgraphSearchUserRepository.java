@@ -37,7 +37,6 @@ import java.util.List;
 public class DgraphSearchUserRepository implements SearchUserRepository {
     DgraphMappingProcessor mp;
     DgraphTemplate template;
-    ObjectMapper mapper;
 
     /**
      * <h4>Finds a list of users whose usernames partially match the given keyword.</h4>
@@ -73,61 +72,33 @@ public class DgraphSearchUserRepository implements SearchUserRepository {
         return getUsersList(query);
     }
 
-    /**
-     * <h4>Finds users whose profile full name contains the given keyword.</h4>
-     * <p>
-     * Unlike the username-based search, this method retrieves all users via a general query
-     * and performs in-memory filtering based on the {@code user_profile.full_name} field,
-     * since full names may not be indexed or directly searchable in Dgraph.
-     * </p>
-     *
-     * <h4>Note:</h4>
-     * This method may be inefficient for large datasets due to full dataset scan.
-     *
-     * @param kw the keyword to search for in profile full names.
-     * @return a list of {@link User} entities whose profile full name contains the keyword.
-     * @author HoanTX
-     */
     @Override
     public List<User> findUserByProfileFullNameContaining(String kw) {
         log.info("findUserByProfileFullNameContaining");
 
-        var query = QueryBuilder.builder()
-                .queryName("get_all_users")
-                .forType(User.class)
-                .build();
+        var query = """
+                {
+                  q(func: type(User)) @cascade {
+                    uid
+                    dgraph.type
+                    id
+                    user.user_name
+                    user.email
+                    user.profile @filter(regexp(user_profile.full_name, /%s/)) {
+                        user_profile.avatar_url
+                    }
+                  }
+                }
+                """.formatted(kw);
 
-        List<User> list = getUsersList(query);
-
-        List<User> result = new ArrayList<>();
-        list.forEach(l -> {
-            var profile = l.getProfile();
-            if (profile != null && profile.getFullName().contains(kw)) {
-                result.add(l);
-            }
-        });
-
-        return result;
+        return getUsersList(query);
     }
 
-    /**
-     * <h4>Executes a read-only Dgraph query and maps the JSON response to a list of {@link User} objects.</h4>
-     *
-     * <p>
-     * Internally uses the {@link DgraphTemplate} to run the query and {@link DgraphMappingProcessor}
-     * to convert the result into strongly typed Java objects.
-     * </p>
-     *
-     * @param query the Dgraph query string to execute.
-     * @return a list of {@link User} objects parsed from the query response.
-     * @author HoanTX
-     */
     private List<User> getUsersList(String query) {
-        return template.executeReadOnlyQueryReturnList(txn -> {
+        return template.executeReadOnlyQuery(txn -> {
             var response = txn.query(query);
-            List<User> users = new ArrayList<>(mp.fromDefaultQueryResponse(response.getJson().toStringUtf8(), User.class));
-            users.forEach(u -> log.info("response: {}", u.toString()));
-            return users;
+            log.info("response: \n{}", response.getJson().toStringUtf8());
+            return new ArrayList<>(mp.fromDefaultQueryResponse(response.getJson().toStringUtf8(), User.class));
         });
     }
 }

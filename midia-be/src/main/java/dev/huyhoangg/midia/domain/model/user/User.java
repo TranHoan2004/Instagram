@@ -21,7 +21,6 @@ import java.util.Set;
 public class User extends DgraphBaseModel {
     @DgraphPredicate("id")
     private String id; // uuid
-
     @DgraphPredicate("user.user_name")
     private String username;
 

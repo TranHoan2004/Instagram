@@ -7,6 +7,7 @@ import dev.huyhoangg.midia.domain.model.user.User;
 import dev.huyhoangg.midia.domain.model.user.UserProfile;
 import dev.huyhoangg.midia.domain.model.user.UserStats;
 import dev.huyhoangg.midia.domain.repository.user.RoleRepository;
+import dev.huyhoangg.midia.domain.repository.user.SearchUserRepository;
 import dev.huyhoangg.midia.domain.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -31,6 +33,7 @@ public class UserCommonServiceImpl implements UserCommonService {
     private final UserEventProducer userEventProducer;
     private final RedisTemplate<String, String> redisTemplate;
     private final UserMapper userMapper;
+    private final SearchUserRepository suRepo;
 
     @Override
     public RegisterUserResp registerUser(RegisterUserInput input) {
@@ -122,5 +125,12 @@ public class UserCommonServiceImpl implements UserCommonService {
     public dev.huyhoangg.midia.codegen.types.User getUserByEmail(String email) {
         var user = userRepository.findByEmail(email).orElseThrow(UserNotExistsException::new);
         return userMapper.toGraphQLUserType(user);
+    }
+
+    @Override
+    public List<User> searchUserByKeyword(String kw) {
+        List<User> list = suRepo.findUserByUserNameContaining(kw);
+        log.info("searchUserByKeyword: {}", list);
+        return list.isEmpty() ? suRepo.findUserByProfileFullNameContaining(kw) : list;
     }
 }

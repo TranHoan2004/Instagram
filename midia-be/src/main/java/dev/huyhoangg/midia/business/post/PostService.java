@@ -1,12 +1,13 @@
 package dev.huyhoangg.midia.business.post;
 
-import dev.huyhoangg.midia.domain.model.post.Post;
-import dev.huyhoangg.midia.domain.model.post.PostVisibility;
 
 import java.util.List;
 
-public interface PostService {
-    Post createPost(String caption, PostVisibility visibility, List<String> attachmentIds);
+import dev.huyhoangg.midia.codegen.types.CreatePostInput;
+import dev.huyhoangg.midia.codegen.types.CreatePostResp;
+import dev.huyhoangg.midia.codegen.types.Post;
 
+public interface PostService {
+    CreatePostResp createPost(CreatePostInput input);
     List<Post> getPostsByAuthorId(String authorId);
 } 

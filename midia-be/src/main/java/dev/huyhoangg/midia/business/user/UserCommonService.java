@@ -5,6 +5,8 @@ import dev.huyhoangg.midia.codegen.types.RegisterUserResp;
 import dev.huyhoangg.midia.codegen.types.User;
 import dev.huyhoangg.midia.codegen.types.UserProfile;
 
+import java.util.List;
+
 public interface UserCommonService {
 
     RegisterUserResp registerUser(RegisterUserInput registerUserInput);
@@ -20,4 +22,6 @@ public interface UserCommonService {
     User getUserByUsername(String username);
 
     User getUserByEmail(String email);
+
+    List<dev.huyhoangg.midia.domain.model.user.User> searchUserByKeyword(String kw);
 }

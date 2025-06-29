@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 @Slf4j
 public class EmailServiceImpl implements EmailService {
-//    private final JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -46,12 +46,12 @@ public class EmailServiceImpl implements EmailService {
     }
 
     private void sendEmailWithHtml(String to, String subject, String htmlContent) throws MessagingException {
-//        var mimeMessage = mailSender.createMimeMessage();
-//        var helper = new MimeMessageHelper(mimeMessage, true, "utf-8");
-//        helper.setFrom("noreply@midia.com");
-//        helper.setTo(to);
-//        helper.setSubject(subject);
-//        helper.setText(htmlContent, true);
-//        mailSender.send(mimeMessage);
+        var mimeMessage = mailSender.createMimeMessage();
+        var helper = new MimeMessageHelper(mimeMessage, true, "utf-8");
+        helper.setFrom("noreply@midia.com");
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+        mailSender.send(mimeMessage);
     }
 }

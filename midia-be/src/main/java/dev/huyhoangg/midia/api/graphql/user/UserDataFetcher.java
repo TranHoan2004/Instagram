@@ -14,7 +14,7 @@ import java.util.List;
 
 @DgsComponent
 @RequiredArgsConstructor
-public class UserDataFetcher {
+public class UserDatafetcher {
     private final UserCommonService userCommonService;
 
     @DgsQuery

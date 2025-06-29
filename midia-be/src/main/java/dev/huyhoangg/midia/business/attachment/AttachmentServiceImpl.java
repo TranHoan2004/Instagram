@@ -18,14 +18,11 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     public Attachment createAttachmentFromFile(MultipartFile file) {
-        // Tạo tên file duy nhất
         String originalFilename = file.getOriginalFilename();
         String fileExtension = "";
         if (originalFilename != null && originalFilename.contains(".")) {
             fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
         }
-        
-        // Tạo link cho file (trong thực tế sẽ upload lên cloud storage)
         String originalLink = "/uploads/" + UUID.randomUUID().toString() + fileExtension;
         
         // Tạo Attachment mới
@@ -34,23 +31,6 @@ public class AttachmentServiceImpl implements AttachmentService {
                 .title(originalFilename)
                 .description("Uploaded file: " + originalFilename)
                 .originalLink(originalLink)
-                .optimizedLinks(new HashSet<>()) // Có thể thêm các link optimized sau
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
-                .build();
-
-        return attachmentRepository.save(attachment);
-    }
-    
-    /**
-     * Tạo attachment mẫu để test
-     */
-    public Attachment createSampleAttachment(String title, String description) {
-        Attachment attachment = Attachment.builder()
-                .id(UUID.randomUUID().toString())
-                .title(title)
-                .description(description)
-                .originalLink("/uploads/sample/" + UUID.randomUUID().toString() + ".jpg")
                 .optimizedLinks(new HashSet<>())
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())

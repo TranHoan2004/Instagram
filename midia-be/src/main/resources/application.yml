@@ -61,6 +61,8 @@ cors:
 
 dgs:
   graphql:
+    graphiql:
+      enabled: false
     virtualthreads:
       enabled: true
     schema-locations: classpath*:graphql-client/*.graphql*
@@ -85,3 +87,6 @@ dgraph:
 email-verification:
   url: http://localhost:5173/email-verify
   valid-duration: 900 # in seconds
+
+gcs:
+  bucket: ${GCS_BUCKET_NAME}
