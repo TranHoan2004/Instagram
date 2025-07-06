@@ -18,8 +18,7 @@ public class OpenApiConfig {
         return GroupedOpenApi.builder()
                 .group("actuator")
                 .addOpenApiCustomizer(openApi -> openApi.info(
-                        new Info().title("Midia Actuator API").version(version).description("Actuator")
-                ))
+                        new Info().title("Midia Actuator API").version(version).description("Actuator")))
                 .pathsToMatch(webEndpointProperties.getBasePath() + Constants.ALL_PATTERN)
                 .build();
     }
@@ -29,8 +28,7 @@ public class OpenApiConfig {
         return GroupedOpenApi.builder()
                 .group("midia-rest")
                 .addOpenApiCustomizer(openApi -> openApi.info(
-                        new Info().title("Midia API").version(version).description("Midia RESTful API")
-                ))
+                        new Info().title("Midia API").version(version).description("Midia RESTful API")))
                 .packagesToScan("dev.huyhoangg.midia.api.rest")
                 .build();
     }

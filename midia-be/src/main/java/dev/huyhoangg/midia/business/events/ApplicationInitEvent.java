@@ -17,7 +17,6 @@ import java.util.Set;
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationInitEvent {
-    private boolean initialized = false;
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final UserRepository userRepository;
@@ -57,17 +56,22 @@ public class ApplicationInitEvent {
             if (!args.containsOption("--bootstrap")) {
                 return;
             }
-            if (initialized) {
-                return;
+            var userPermissions = BASIC_PERMISSIONS;
+            var adminPermissions = ADMIN_PERMISSIONS;
+            if (permissionRepository.findAll().isEmpty()) {
+                userPermissions = (Set<Permission>) permissionRepository.saveAll(userPermissions);
+                adminPermissions = (Set<Permission>) permissionRepository.saveAll(adminPermissions);
             }
-            Set<Permission> userPermissions = BASIC_PERMISSIONS;
-            userPermissions = (Set<Permission>) permissionRepository.saveAll(userPermissions);
 
-            var role = new Role();
-            role.setName("USER");
-            role.setPermissions(userPermissions);
-            roleRepository.save(role);
-            initialized = true;
+            var userRole = new Role();
+            userRole.setName("USER");
+            userRole.setPermissions(userPermissions);
+            roleRepository.save(userRole);
+
+            var adminRole = new Role();
+            adminRole.setName("ADMIN");
+            adminRole.setPermissions(adminPermissions);
+            roleRepository.save(adminRole);
         };
     }
 }

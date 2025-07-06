@@ -38,6 +38,9 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(input.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Incorrect password");
         }
+        if (user.getIsLocked()) {
+            throw new LockedAccountException();
+        }
 
         return LoginResp.newBuilder()
                 .accessToken(jwtService.generateToken(user, false))

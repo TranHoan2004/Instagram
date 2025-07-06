@@ -38,11 +38,4 @@ public class UserDatafetcher {
         Pageable pageable = PageRequest.of(page, limit);
         return null;
     }
-
-    @DgsData(parentType = "User", field = "profile")
-    public UserProfile userProfile(DgsDataFetchingEnvironment dfe) {
-        User user = dfe.getSource();
-        assert user != null;
-        return userCommonService.getUserProfile(user.getId());
-    }
 }

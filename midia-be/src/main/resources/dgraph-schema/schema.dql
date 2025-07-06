@@ -1,10 +1,17 @@
 <created_at>: datetime .
 <deleted_at>: datetime @index(hour) .
 <id>: string @index(hash) @upsert .
-<permission.action>: string .
+<updated_at>: datetime .
+
+<permission.action>: string @index(exact) @upsert .
+
 <role.name>: string @index(hash) .
 <role.permissions>: [uid] .
-<updated_at>: datetime .
+
+<social_account.provider>: string .
+<social_account.linked_at>: datetime .
+<social_account.sub>: string .
+
 <user.email>: string @index(hash) .
 <user.followers>: [uid] .
 <user.followings>: [uid] .
@@ -13,20 +20,26 @@
 <user.password>: string .
 <user.profile>: uid .
 <user.role>: uid .
+<user.social_accounts>: [uid] .
 <user.stats>: uid .
-<user.user_name>: string @index(trigram) .
+<user.user_name>: string @index(trigram, hash) .
+
 <user_profile.avatar_url>: string .
 <user_profile.bio>: string .
 <user_profile.dob>: datetime .
 <user_profile.full_name>: string .
 <user_profile.phone_number>: string .
+<user_profile.gender>: string .
+
 <user_stats.total_followers>: int .
 <user_stats.total_followings>: int .
 <user_stats.total_posts>: int .
+
 <post.caption>: string .
 <post.visibility>: string .
-<author>: uid .
-<attachments>: [uid] .
+<post.author>: uid .
+<post.attachments>: [uid] .
+
 <attachment.title>: string .
 <attachment.description>: string .
 <attachment.original_link>: string .
@@ -54,13 +67,19 @@ type <Post> {
 	updated_at
 	post.caption
 	post.visibility
-	author
-	attachments
+	post.author
+	post.attachments
 }
 
 type <Role> {
 	role.name
 	role.permissions
+}
+
+type <SocialAccount> {
+    social_account.provider
+    social_account.linked_at
+    social_account.sub
 }
 
 type <User> {
@@ -76,6 +95,7 @@ type <User> {
 	user.password
 	user.email
 	user.role
+	user.social_accounts
 	user.stats
 	user.profile
 }

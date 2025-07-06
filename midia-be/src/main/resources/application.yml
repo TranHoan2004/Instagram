@@ -18,7 +18,9 @@ spring:
             scope:
               - email
               - profile
-              - openid
+  devtools:
+    restart:
+      enabled: false
   kafka:
     bootstrap-servers:
       - ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
@@ -55,9 +57,11 @@ management:
       exposure:
         include: "*"
 
+web-frontend-url: ${WEB_FRONTEND_URL:http://localhost:5173}
+
 cors:
   allowed-origins:
-    - http://localhost:5173
+    - ${web-frontend-url}
 
 dgs:
   graphql:
@@ -76,17 +80,22 @@ jwt:
   signer-key: "3ac67e1f13d6744c9e5158c0508a91da54696589d871c20750f16a24838c49322096f9e541173311b2f11c94bc11734d157b7174bb78b0e2a57d3a2dd4f40ef0"
   valid-duration: 60 # in seconds
   refresh-duration: 3600 # in seconds
+  issuer: "midia.io.vn"
 
 server:
   port: 8000 # for avoid port conflict with dgraph standalone container which run in port 8080
 
 dgraph:
-  host: ${DGRAPH_ADDRESS:localhost}
+  host: ${DGRAPH_HOST:localhost}
   port: ${DGRAPH_PORT:9080}
 
 email-verification:
-  url: http://localhost:5173/email-verify
+  url: ${web-frontend-url}/email-verify
   valid-duration: 900 # in seconds
 
 gcs:
-  bucket: ${GCS_BUCKET_NAME}
+  bucket: ${GCS_BUCKET_NAME:default}
+
+oauth2-login:
+  redirect-uris:
+    - ${web-frontend-url}/oauth2/redirect

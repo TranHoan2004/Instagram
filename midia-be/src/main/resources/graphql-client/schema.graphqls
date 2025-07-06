@@ -8,9 +8,12 @@ type Mutation {
     logout(accessToken: String, refreshToken: String): String
     # Post
     createPost(input: CreatePostInput!): CreatePostResp
+    # User
+    editUserProfile(input: EditUserInput): Int
 }
 
 type Query {
+    # User
     me: User
     userProfile(id: String!): UserProfile
     users: [User]
@@ -49,7 +52,7 @@ input RegisterUserInput {
     firstName: String! @NotBlank(message: "First name must not be blank")
     lastName: String!
     email: String! @Email(message: "Invalid email address")
-    password: String! @Min(value: 8, message: "Password must be at least 8 characters long")
+    password: String! @Size(min: 8, message: "Password must be at least 8 characters long")
     dob: Date! @Past
 }
 
@@ -59,8 +62,8 @@ type RegisterUserResp {
 }
 
 input LoginInput {
-    emailOrUsername: String!
-    password: String!
+    emailOrUsername: String! @NotBlank(message: "Email or username must not be blank")
+    password: String! @Size(min: 8, message: "Password must be at least 8 characters long")
 }
 
 type LoginResp {
@@ -126,4 +129,15 @@ type SearchUserResp {
     username: String!
     avatar: String
     fullName: String
+}
+
+input EditUserInput {
+    userId: ID!
+    avatarUrl: String
+    fullName: String
+    username: String
+    bio: String
+    email: String
+    phoneNumber: String
+    gender: String
 }

@@ -5,18 +5,24 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+
 import dev.huyhoangg.midia.business.auth.UnauthenticatedException;
 import dev.huyhoangg.midia.domain.model.user.User;
+import dev.huyhoangg.midia.domain.repository.user.PermissionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -26,12 +32,18 @@ import java.util.concurrent.TimeUnit;
 public class JwtService {
     @Value("${jwt.valid-duration}")
     private long VALID_DURATION;
+
     @Value("${jwt.refresh-duration}")
     private long REFRESH_DURATION;
+
     @Value("${jwt.signer-key}")
     private String SIGNER_KEY;
 
+    @Value("${jwt.issuer}")
+    private String ISSUER;
+
     private final StringRedisTemplate redisTemplate;
+    private final PermissionRepository permissionRepository;
 
     public Long getValidDuration() {
         return VALID_DURATION;
@@ -46,14 +58,15 @@ public class JwtService {
 
         var jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getId())
-                .issuer("midia.com")
+                .issuer(ISSUER)
                 .issueTime(new Date())
                 .claim("token_type", "Bearer")
                 .claim("type", isRefresh ? "refresh_token" : "access_token")
                 .claim("username", user.getUsername())
-                .expirationTime(new Date(
-                        Instant.now().plus(isRefresh ? REFRESH_DURATION : VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()
-                ))
+                .claim("scope", buildScope(user))
+                .expirationTime(new Date(Instant.now()
+                        .plus(isRefresh ? REFRESH_DURATION : VALID_DURATION, ChronoUnit.SECONDS)
+                        .toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
                 .build();
         var payload = new Payload(jwtClaimsSet.toJSONObject());
@@ -67,7 +80,7 @@ public class JwtService {
         }
     }
 
-    public boolean validAccessToken(String token) {
+    public boolean isValidAccessToken(String token) {
         var isValid = true;
         try {
             verifyToken(token);
@@ -77,7 +90,7 @@ public class JwtService {
         return isValid;
     }
 
-    public SignedJWT verifyToken(String token) throws JOSEException, ParseException {
+    public SignedJWT verifyToken(String token) throws JOSEException, ParseException, UnauthenticatedException {
         var verifier = new MACVerifier(SIGNER_KEY.getBytes());
         var signedJWT = SignedJWT.parse(token);
 
@@ -107,5 +120,21 @@ public class JwtService {
         } catch (JOSEException | ParseException e) {
             throw new UnauthenticatedException();
         }
+    }
+
+    private String buildScope(User user) {
+        var stringJoiner = new StringJoiner(" ");
+
+        if (Objects.nonNull(user.getRole())) {
+           stringJoiner.add("ROLE_" + user.getRole().getName());
+           var permissions = permissionRepository.findAllByRoleName(user.getRole().getName());
+           if (!CollectionUtils.isEmpty(permissions)) {
+               permissions.forEach(permission -> {
+                   stringJoiner.add(permission.getAction());
+               });
+           }
+        }
+
+        return stringJoiner.toString();
     }
 }

@@ -37,7 +37,9 @@ stages:
   - build
   - deploy
 
-test:
+test-dev:
+  environment:
+    name: dev
   tags:
     - saas-linux-medium-amd64
   services:
@@ -52,9 +54,8 @@ test:
   script:
     - ./gradlew test 
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-    - if: $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev"
+    - if: $CI_COMMIT_BRANCH == "dev"
   artifacts:
     when: always
     reports:

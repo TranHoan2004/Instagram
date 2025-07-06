@@ -31,4 +31,7 @@ public class UserProfile extends DgraphBaseModel {
 
     @DgraphPredicate("user_profile.avatar_url")
     private String avatarUrl;
+
+    @DgraphPredicate("user_profile.gender")
+    private String gender;
 }

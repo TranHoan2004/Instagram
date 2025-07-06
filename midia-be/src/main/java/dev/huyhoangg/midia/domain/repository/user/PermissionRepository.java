@@ -9,6 +9,8 @@ import java.util.Set;
 public interface PermissionRepository {
     Permission save(Permission permission);
 
+    Set<Permission> findAll();
+
     Optional<Permission> findByAction(String action);
 
     Set<Permission> findAllByActions(Collection<String> actions);

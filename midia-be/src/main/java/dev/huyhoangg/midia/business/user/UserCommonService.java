@@ -24,4 +24,8 @@ public interface UserCommonService {
     User getUserByEmail(String email);
 
     List<dev.huyhoangg.midia.domain.model.user.User> searchUserByKeyword(String kw);
+
+    void editUserProfile(String userId, dev.huyhoangg.midia.domain.model.user.UserProfile profile);
+
+    void editUserInformation(String id, String username, String email);
 }

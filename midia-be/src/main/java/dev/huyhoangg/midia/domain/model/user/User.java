@@ -5,10 +5,9 @@ import dev.huyhoangg.midia.dgraph.annotation.DgraphNode;
 import dev.huyhoangg.midia.dgraph.annotation.DgraphPredicate;
 import dev.huyhoangg.midia.dgraph.annotation.Relationship;
 import dev.huyhoangg.midia.domain.model.DgraphBaseModel;
-import lombok.*;
-
 import java.time.Instant;
 import java.util.Set;
+import lombok.*;
 
 @Getter
 @Setter
@@ -21,6 +20,7 @@ import java.util.Set;
 public class User extends DgraphBaseModel {
     @DgraphPredicate("id")
     private String id; // uuid
+
     @DgraphPredicate("user.user_name")
     private String username;
 
@@ -49,6 +49,10 @@ public class User extends DgraphBaseModel {
     @DgraphPredicate("user.followers")
     @Relationship
     private Set<User> followers;
+
+    @DgraphPredicate("user.social_accounts")
+    @Relationship
+    private Set<SocialAccount> socialAccounts;
 
     @DgraphPredicate("user.is_locked")
     @Builder.Default
