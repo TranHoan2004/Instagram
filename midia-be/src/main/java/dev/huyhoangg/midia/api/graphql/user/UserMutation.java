@@ -22,6 +22,22 @@ public class UserMutation {
         return userCommonService.registerUser(input);
     }
 
+    /**
+     * <h4>Edit user profile information</h4>
+     * <p>
+     * This method is a GraphQL mutation annotated with {@code @DgsMutation}, which allows updating a user's profile
+     * and account information based on the input provided via the {@link EditUserInput} object.
+     *
+     * <p>It delegates the update logic to {@code userCommonService.editUserProfile()} for profile details such as bio,
+     * avatar URL, phone number, full name, and gender, and to {@code userCommonService.editUserInformation()} for
+     * basic account details such as username and email.</p>
+     *
+     * <p>The method always returns {@code 200} to indicate a successful operation.</p>
+     *
+     * @param input An {@link EditUserInput} object containing the updated profile and account data for the user.
+     * @return {@code 200} if the update is completed successfully.
+     * @author HoanTX
+     */
     @DgsMutation
     public int editUserProfile(@InputArgument EditUserInput input) {
         userCommonService.editUserProfile(input.getUserId(), UserProfile.builder()
