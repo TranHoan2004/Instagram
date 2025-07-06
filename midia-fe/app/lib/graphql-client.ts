@@ -1,52 +1,108 @@
 import {
-  ApolloLink,
+  fromPromise,
   HttpLink,
   InMemoryCache,
   Observable,
-  split
+  split,
+  type FetchResult,
+  type NextLink,
+  type Operation
 } from '@apollo/client/index.js'
 import {
   createApolloLoaderHandler,
   ApolloClient
 } from '@apollo/client-integration-react-router'
+import { setContext } from '@apollo/client/link/context'
+import { onError } from '@apollo/client/link/error'
+import { getToken, refreshToken } from '~/services/auth.service'
 
 const httpLink = new HttpLink({
   uri: `${import.meta.env.VITE_API_URL}/graphql`,
   credentials: 'include'
 })
 
-const authMiddleware = new ApolloLink((operation, forward) => {
-  return new Observable((observer) => {
-    fetch('/api/auth/token')
-      .then((resp) => resp.json())
-      .then((data) => {
-        const accessToken = data.accessToken
+let isRefreshing = false
+let pendingRequests: ((accessToken: string) => void)[] = []
 
-        operation.setContext(({ headers = {} }) => ({
+const enqueueRequest = (callback: (accessToken: string) => void) => {
+  pendingRequests.push(callback)
+}
+
+const resolvePendingRequests = (accessToken: string) => {
+  pendingRequests.forEach((callback) => callback(accessToken))
+  pendingRequests = []
+}
+
+const unAuthenticatedErrorHandler = onError(
+  ({ graphQLErrors, operation, forward }) => {
+    if (
+      graphQLErrors?.some(
+        (err) => err.extensions?.classification === 'UNAUTHENTICATED'
+      )
+    ) {
+      return refresh(operation, forward)
+    }
+  }
+)
+
+const refresh = (operation: Operation, forward: NextLink) => {
+  if (!isRefreshing) {
+    isRefreshing = true
+    return fromPromise(
+      refreshToken()
+        .then((accessToken) => {
+          isRefreshing = false
+          resolvePendingRequests(accessToken)
+          return accessToken
+        })
+        .catch((err) => {
+          console.error('Failed to refresh new token', err)
+          isRefreshing = false
+          pendingRequests = []
+          // if (window) window.location.href = '/signin'
+          throw err
+        })
+    ).flatMap((accessToken: string) => {
+      const headers = operation.getContext().headers || {}
+      operation.setContext({
+        headers: {
+          ...headers,
+          Authorization: `Bearer ${accessToken}`
+        }
+      })
+
+      return forward(operation)
+    })
+  } else {
+    return new Observable((observer) => {
+      enqueueRequest((accessToken) => {
+        const headers = operation.getContext().headers || {}
+        operation.setContext({
           headers: {
             ...headers,
-            Authorization: accessToken ? `Bearer ${accessToken}` : ''
+            Authorization: `Bearer ${accessToken}`
           }
-        }))
-
-        const subscriber = {
-          next: observer.next.bind(observer),
-          error: observer.error.bind(observer),
-          complete: observer.complete.bind(observer)
-        }
-
-        forward(operation).subscribe(subscriber)
+        })
+        forward(operation).subscribe(observer)
       })
-      .catch((err) => {
-        observer.error(err)
-      })
-  })
+    }) as Observable<FetchResult>
+  }
+}
+
+const authMiddleware = setContext(async (_, { headers }) => {
+  const accessToken = await getToken()
+  return {
+    headers: {
+      ...headers,
+      authorization: accessToken ? `Bearer ${accessToken}` : ''
+    }
+  }
 })
 
 // Conditional auth based on operation context
 const conditionalLink = split(
   (operation) => operation.getContext().requiresAuth === true,
-  authMiddleware.concat(httpLink), // if requiresAuth, use authMiddleware
+  authMiddleware.concat(unAuthenticatedErrorHandler).concat(httpLink), // if requiresAuth, use authMiddleware
   httpLink
 )
 

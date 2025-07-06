@@ -52,7 +52,6 @@ export interface User {
 }
 
 export interface UserProfile {
-  userID: string
   fullName: string
   phoneNumber?: string
   birthDate?: string
@@ -61,10 +60,9 @@ export interface UserProfile {
 }
 
 export interface UserStats {
-  userID: string
-  followingCount: number
-  followerCount: number
-  postCount: number
+  totalFollowings?: number
+  totalFollowers?: number
+  totalPosts?: number
 }
 
 export interface Post {

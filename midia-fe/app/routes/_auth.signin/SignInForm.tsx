@@ -5,11 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { gql, useMutation } from '@apollo/client/index.js'
 import { useFetcher, useNavigate } from 'react-router'
-import { useDispatch } from 'react-redux'
-import { signIn } from '~/redux/auth-slice'
-import { ME } from '~/lib/graphql-queries'
-import type { User } from '~/lib/types'
-import { makeClient } from '~/lib/graphql-client'
 
 const schema = z.object({
   emailOrUsername: z
@@ -40,11 +35,9 @@ const SignInForm = () => {
     },
     resolver: zodResolver(schema)
   })
-
   const [login, { error }] = useMutation(LOGIN_MUT)
-  const navigate = useNavigate()
   const fetcher = useFetcher()
-  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const onSubmit = (data: z.infer<typeof schema>) => {
     login({
@@ -68,23 +61,6 @@ const SignInForm = () => {
           method: 'POST',
           action: '/api/auth/token'
         })
-
-        const client = makeClient()
-        try {
-          const response = await client.query({
-            query: ME,
-            context: {
-              requiresAuth: true
-            }
-          })
-          const user = response.data && response.data.me
-          if (user) {
-            dispatch(signIn(user as User))
-          }
-        } catch (error) {
-          console.error(error)
-        }
-
         navigate('/')
       },
       onError: (error) => {

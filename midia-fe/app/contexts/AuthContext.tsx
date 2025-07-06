@@ -1,19 +1,31 @@
-import { createContext, use, useCallback, useMemo } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import type { User } from '~/lib/types'
-import {
-  signIn as signInAction,
-  signOut as signOutAction
-} from '~/redux/auth-slice'
-import type { RootState } from '~/redux/store'
+import { createContext, use, useEffect, useState } from 'react'
+import { gql, useLazyQuery } from '@apollo/client/index.js'
+import { useNavigate } from 'react-router'
+import type { User } from '~/lib/graphql-types'
 
 interface AuthContextInterface {
   user: User | null
-  signIn: (user: User) => void
-  signOut: () => void
   isAuthenticated: boolean
-  isAuthorized: (...roles: string[]) => boolean
+  signOut: () => void
 }
+
+const ME = gql`
+  query me {
+    me {
+      id
+      username
+      email
+      role
+      profile {
+        fullName
+        avatarUrl
+        birthDate
+        phoneNumber
+        bio
+      }
+    }
+  }
+`
 
 export const AuthContext = createContext<AuthContextInterface | undefined>(
   undefined
@@ -21,46 +33,41 @@ export const AuthContext = createContext<AuthContextInterface | undefined>(
 
 interface AuthProviderProps {
   children: React.ReactNode
-  initialUser?: User | null
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const dispatch = useDispatch()
-  const user = useSelector((state: RootState) => state.auth.user)
-  const isAuthenticated = useSelector(
-    (state: RootState) => state.auth.isAuthenticated
-  )
+  const navigate = useNavigate()
 
-  const signIn = useCallback(
-    (user: User) => {
-      dispatch(signInAction(user))
+  const [user, setUser] = useState<User | null>(null)
+  const isAuthenticated = !!user
+
+  const [getMe] = useLazyQuery(ME, {
+    context: {
+      requiresAuth: true
     },
-    [dispatch]
-  )
 
-  const signOut = useCallback(() => {
-    dispatch(signOutAction())
-  }, [dispatch])
-
-  const isAuthorized = useCallback(
-    (...roles: string[]) => {
-      return isAuthenticated && roles.includes(user?.role || '')
+    onCompleted: (data) => {
+      setUser(data.me)
     },
-    [isAuthenticated, user]
-  )
 
-  const contextValue = useMemo(
-    () => ({
-      user,
-      signIn,
-      signOut,
-      isAuthenticated,
-      isAuthorized
-    }),
-    [user, signIn, signOut, isAuthenticated, isAuthorized]
-  )
+    onError: () => {
+      setUser(null)
+    }
+  })
 
-  return <AuthContext value={contextValue}>{children}</AuthContext>
+  const signOut = () => {
+    setUser(null)
+  }
+
+  useEffect(() => {
+    getMe()
+  }, [])
+
+  return (
+    <AuthContext value={{ user, isAuthenticated, signOut }}>
+      {children}
+    </AuthContext>
+  )
 }
 
 export const useAuth = () => {

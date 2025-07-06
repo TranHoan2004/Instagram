@@ -10,23 +10,15 @@ interface User {
 }
 
 interface SuggestedUsersListProps {
-  currentUser?: {
-    avatar: string
-    username: string
-    displayName: string
-  }
   suggestedUsers?: User[]
   onSeeAll?: () => void
-  onSwitch?: () => void
   onUserAction?: (userId: string, action: 'follow' | 'unfollow') => void
   className?: string
 }
 
 const SuggestedUsersList = ({
-  currentUser,
   suggestedUsers,
   onSeeAll,
-  onSwitch,
   onUserAction,
   className = ''
 }: SuggestedUsersListProps) => {
@@ -75,13 +67,6 @@ const SuggestedUsersList = ({
     ]
   )
 
-  const defaultCurrentUser = currentUser || {
-    avatar:
-      'https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/2e54f712-3fc7-4d59-add8-2352b20223b0',
-    username: 'rtralrayhan',
-    displayName: 'Shekh Al Raihan'
-  }
-
   const handleUserAction = (userId: string) => {
     setUsers((prevUsers) =>
       prevUsers.map((user) =>
@@ -100,50 +85,17 @@ const SuggestedUsersList = ({
     onSeeAll?.()
   }
 
-  const handleSwitch = () => {
-    console.log('Switch account')
-    onSwitch?.()
-  }
-
   return (
-    <div className={`w-full p-5 flex flex-col gap-[23px] ${className}`}>
-      <div className="flex items-center justify-between w-full h-[38px]">
-        <div className="flex items-center gap-3">
-          <div className="w-[38px] h-[38px] rounded-full overflow-hidden flex-shrink-0">
-            <img
-              src={defaultCurrentUser.avatar}
-              alt={defaultCurrentUser.username}
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          <div className="flex flex-col gap-0.5">
-            <span className="text-[15px] font-medium leading-[17px]">
-              {defaultCurrentUser.username}
-            </span>
-            <span className="text-[14px] font-normal leading-[15px] opacity-60">
-              {defaultCurrentUser.displayName}
-            </span>
-          </div>
-        </div>
-
-        <span
-          onClick={handleSwitch}
-          className="text-[12px] font-semibold leading-[13px] hover:opacity-80 transition-opacity cursor-pointer"
-        >
-          Switch
-        </span>
-      </div>
-
+    <div className={`w-full p-5 flex flex-col gap-5 ${className}`}>
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between w-full h-[15px]">
-          <span className="text-[14px] font-medium leading-[15px]">
+          <span className="text-sm font-medium leading-3.5">
             Suggested for you
           </span>
           <button
             type="button"
             onClick={handleSeeAll}
-            className="text-[12px] font-medium  leading-[13px] hover:opacity-70 transition-opacity"
+            className="text-xs font-medium leading-4 hover:opacity-70 transition-opacity"
           >
             See All
           </button>

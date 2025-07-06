@@ -1,8 +1,4 @@
-import {
-  PhotoIcon,
-  TagIcon,
-  BookmarkIcon
-} from '@heroicons/react/24/outline'
+import { PhotoIcon, TagIcon, BookmarkIcon } from '@heroicons/react/24/outline'
 import {
   PhotoIcon as PhotoIconSolid,
   TagIcon as TagIconSolid,
@@ -14,7 +10,6 @@ import ProfileGrid from './ProfileGrid'
 import PostDetailModal from '../../components/post/PostDetailModal'
 import { useState } from 'react'
 import type { Post } from '~/lib/types'
-
 
 const mockProfileData = {
   username: 'username',
@@ -33,7 +28,8 @@ const mockProfileData = {
   ],
   posts: Array.from({ length: 6 }).map((_, index) => ({
     user: {
-      avatar: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800',
+      avatar:
+        'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800',
       username: 'user1',
       isVerified: false
     },
@@ -47,11 +43,36 @@ const mockProfileData = {
     likes: [27, 14, 8, 32, 5, 19][index],
     caption: `Post ${index + 1}`,
     comments: [
-      { id: `c${index}-1`, username: 'userA', content: 'Awesome pic! 😍', isLiked: true },
-      { id: `c${index}-2`, username: 'userB', content: 'Nice! 👍', isLiked: false },
-      { id: `c${index}-3`, username: 'userC', content: 'Love this view! 🌄', isLiked: false },
-      { id: `c${index}-4`, username: 'userD', content: 'So beautiful! ❤️', isLiked: true },
-      { id: `c${index}-5`, username: 'userE', content: '🔥🔥🔥', isLiked: false },
+      {
+        id: `c${index}-1`,
+        username: 'userA',
+        content: 'Awesome pic! 😍',
+        isLiked: true
+      },
+      {
+        id: `c${index}-2`,
+        username: 'userB',
+        content: 'Nice! 👍',
+        isLiked: false
+      },
+      {
+        id: `c${index}-3`,
+        username: 'userC',
+        content: 'Love this view! 🌄',
+        isLiked: false
+      },
+      {
+        id: `c${index}-4`,
+        username: 'userD',
+        content: 'So beautiful! ❤️',
+        isLiked: true
+      },
+      {
+        id: `c${index}-5`,
+        username: 'userE',
+        content: '🔥🔥🔥',
+        isLiked: false
+      }
     ]
   })) as Post[]
 }
@@ -117,32 +138,20 @@ const ProfilePage = () => {
 
   const activeTab = getActiveTab()
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPostIndex, setSelectedPostIndex] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedPostIndex, setSelectedPostIndex] = useState(0)
 
   const handlePostClick = (post: Post, index: number) => {
-    setSelectedPostIndex(index);
-    setIsModalOpen(true);
-  };
+    setSelectedPostIndex(index)
+    setIsModalOpen(true)
+  }
 
   const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
+    setIsModalOpen(false)
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4">
-      <ProfileInfo
-        username={username}
-        fullName={fullName}
-        accountType={accountType}
-        bio={bio}
-        website={website}
-        postCount={postCount}
-        followerCount={followerCount}
-        followingCount={followingCount}
-        profileImageUrl={Array.isArray(profileImageUrl) ? profileImageUrl[0] : profileImageUrl}
-      />
-
       <div className="mt-8 border-t border-gray-300 dark:border-gray-700">
         <div className="flex justify-center gap-8">
           {tabs.map((tab) => {

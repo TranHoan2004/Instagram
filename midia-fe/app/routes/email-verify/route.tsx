@@ -43,6 +43,8 @@ const EmailVerifyPage = () => {
       }
     }
 
+    if (!token || !id) return
+
     verify()
   }, [token, id])
 

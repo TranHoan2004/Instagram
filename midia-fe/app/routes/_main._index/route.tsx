@@ -1,11 +1,16 @@
 import { useState } from 'react'
+import type { LoaderFunction } from 'react-router'
+import { requireAuth } from '~/.server/auth'
 import PostCard from '~/components/post/PostCard'
 import PostDetailModal from '~/components/post/PostDetailModal'
 import type { Post } from '~/lib/types'
 
+export const loader: LoaderFunction = async ({ request }) => {
+  await requireAuth(request)
+}
 
 const NewsFeedPage = () => {
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const posts: Post[] = [
     {
       id: '1',
@@ -83,17 +88,16 @@ const NewsFeedPage = () => {
           onOpenComments={() => setSelectedIndex(index)}
         />
       ))}
-    {selectedIndex !== null &&
-          <PostDetailModal
-        isOpen={selectedIndex !== null}
-        onClose={() => setSelectedIndex(null)}
-        post={posts[selectedIndex]}
-        posts={posts}
-        selectedIndex={selectedIndex || 0}
-        setSelectedIndex={setSelectedIndex}
-      />
-    }
-
+      {selectedIndex !== null && (
+        <PostDetailModal
+          isOpen={selectedIndex !== null}
+          onClose={() => setSelectedIndex(null)}
+          post={posts[selectedIndex]}
+          posts={posts}
+          selectedIndex={selectedIndex || 0}
+          setSelectedIndex={setSelectedIndex}
+        />
+      )}
     </div>
   )
 }

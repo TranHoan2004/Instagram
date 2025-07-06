@@ -9,6 +9,8 @@ import {
 import SignInForm from './SignInForm'
 import { Button } from '@heroui/react'
 import GoogleColoredIcon from '~/components/icons/GoogleColoredIcon'
+import GithubColoredIcon from '~/components/icons/GithubColoredIcon'
+import { AuthProvider } from '~/contexts/AuthContext'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Midia | Sign In' }]
@@ -19,11 +21,12 @@ export const action: ActionFunction = async ({
 }: ActionFunctionArgs) => {
   const formData = await request.formData()
   const provider = formData.get('provider')
-  const url = `${import.meta.env.VITE_API_URL}/oauth2/authorization/${provider}`
+  const env = import.meta.env
+  const url = `${env.VITE_API_URL}/oauth2/authorization/${provider}?redirect_uri=${env.VITE_OAUTH2_REDIRECT_URL}`
   return redirect(url)
 }
 
-type OAuthProvider = 'google' | 'facebook'
+type OAuthProvider = 'google' | 'facebook' | 'github'
 
 const SignInPage = () => {
   const fetcher = useFetcher()
@@ -62,9 +65,20 @@ const SignInPage = () => {
           fullWidth
           radius="sm"
           onPress={() => handleAuthorizeWith('google')}
+          className="mb-3"
         >
-          <GoogleColoredIcon className="size-4" />
+          <GoogleColoredIcon className="size-6" />
           <span>Google</span>
+        </Button>
+
+        <Button
+          variant="bordered"
+          fullWidth
+          radius="sm"
+          onPress={() => handleAuthorizeWith('github')}
+        >
+          <GithubColoredIcon className="size-6" />
+          <span>GitHub</span>
         </Button>
       </div>
     </>

@@ -19,9 +19,11 @@ import {
 import NavigationItem from '../../ui/NavigationItem'
 import CreatePostModal from '~/routes/_main.create-post/CreatePostModal'
 import { Avatar } from '@heroui/react'
+import { useAuth } from '~/contexts/AuthContext'
 
 const LeftSidebar = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { user } = useAuth()
 
   const navigationItems = [
     {
@@ -58,21 +60,21 @@ const LeftSidebar = () => {
       icon: (
         <Avatar
           className="size-6 min-w-[1.5rem]"
-          src="https://i.pravatar.cc/150?img=1"
+          src={user?.profile?.avatarUrl || ''}
         />
       ),
       activeIcon: (
         <Avatar
           className="size-6 min-w-[1.5rem]"
-          src="https://i.pravatar.cc/150?img=1"
+          src={user?.profile?.avatarUrl || ''}
         />
       ),
       label: 'Profile',
       path: '/profile'
     }
-  ];
+  ]
 
- const bottomNavigationItems = [
+  const bottomNavigationItems = [
     {
       icon: <Cog6ToothIcon className="size-6 min-w-[1.5rem]" />,
       activeIcon: <Cog6ToothIconSolid className="size-6 min-w-[1.5rem]" />,
@@ -80,16 +82,12 @@ const LeftSidebar = () => {
       path: '/setting'
     },
     {
-      icon: (
-        <Bars3Icon className="size-6 min-w-[1.5rem] stroke-2" />
-      ),
-      activeIcon: (
-        <Bars3IconSolid className="size-6 min-w-[1.5rem] stroke-2" />
-      ),
+      icon: <Bars3Icon className="size-6 min-w-[1.5rem] stroke-2" />,
+      activeIcon: <Bars3IconSolid className="size-6 min-w-[1.5rem] stroke-2" />,
       label: 'More',
       path: '/#'
     }
-  ];
+  ]
 
   return (
     <>
@@ -128,8 +126,7 @@ const LeftSidebar = () => {
         onClose={() => setIsModalOpen(false)}
       />
     </>
-  );
-};
+  )
+}
 
-export default LeftSidebar;
-
+export default LeftSidebar
