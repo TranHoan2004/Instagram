@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router'
 import { useState } from 'react'
-import EditProfile from './EditProfile'
+import EditProfile, { type EditProfileData } from './EditProfile'
 
 const navItems = [
   'Edit profile',
@@ -15,6 +15,21 @@ const navItems = [
 
 export const Setting = () => {
   const [selected, setSelected] = useState('Edit profile')
+  const [editData, setEditData] = useState({
+    name: '',
+    username: 'Hehe',
+    bio: '',
+    website: '',
+    email: '',
+    phoneNumber: '',
+    gender: '',
+    avatarUrl: '',
+    suggestion: false
+  })
+
+  const handleChangeEditProfile = (updated: Partial<EditProfileData>) => {
+    setEditData((prev) => ({ ...prev, ...updated }))
+  }
 
   return (
     <main className="flex flex-row min-h-screen">
@@ -26,19 +41,25 @@ export const Setting = () => {
                 key={item}
                 onClick={() => setSelected(item)}
                 className={`flex items-center h-10 cursor-pointer transition-colors group my-6   ${
-                  selected === item ? 'font-semibold text-base' : 'font-normal text-sm'
+                  selected === item
+                    ? 'font-semibold text-base'
+                    : 'font-normal text-sm'
                 }`}
               >
                 <div
                   className={`w-1 h-full ${
-                    selected === item ? 'bg-black dark:bg-white' : 'bg-transparent'
+                    selected === item
+                      ? 'bg-black dark:bg-white'
+                      : 'bg-transparent'
                   }`}
                 />
-                <span className={`px-4 text-black dark:text-gray-300 ${
-                  item === 'Switch to personal account'
-                    ? 'text-blue-500 hover:underline dark:text-indigo-300'
-                    : 'text-black dark:text-gray-300'
-                }`}>
+                <span
+                  className={`px-4 text-black dark:text-gray-300 ${
+                    item === 'Switch to personal account'
+                      ? 'text-blue-500 hover:underline dark:text-indigo-300'
+                      : 'text-black dark:text-gray-300'
+                  }`}
+                >
                   {item}
                 </span>
               </li>
@@ -48,7 +69,11 @@ export const Setting = () => {
       </aside>
 
       <section className="flex-1 p-4 w-3/4">
-        {selected === 'Edit profile' ? <EditProfile /> : <Outlet />}
+        {selected === 'Edit profile' ? (
+          <EditProfile data={editData} onChange={handleChangeEditProfile} />
+        ) : (
+          <Outlet />
+        )}
       </section>
     </main>
   )

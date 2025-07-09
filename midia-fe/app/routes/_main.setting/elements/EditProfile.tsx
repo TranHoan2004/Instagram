@@ -9,15 +9,24 @@ import {
   Textarea
 } from '@heroui/react'
 
-export default function EditProfile() {
-  const [name, setName] = useState('')
-  const [username, setUsername] = useState('Hehehe')
-  const [bio, setBio] = useState('')
-  const [website, setWebsite] = useState('')
-  const [email, setEmail] = useState('')
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [gender, setGender] = useState('')
-  const [suggestion, setSuggestion] = useState(false)
+interface EditProfileProps {
+  data: EditProfileData
+  onChange: (data: Partial<EditProfileData>) => void
+}
+
+export interface EditProfileData {
+  name: string
+  username: string
+  bio: string
+  website: string
+  email: string
+  phoneNumber: string
+  gender: string
+  suggestion: boolean
+  avatarUrl?: string
+}
+
+export default function EditProfile({ data, onChange }: EditProfileProps) {
   const [error, setError] = useState<{
     name?: string
     username?: string
@@ -28,18 +37,79 @@ export default function EditProfile() {
     gender?: string
   }>({})
 
+  const [username, setUsername] = useState(() => data.username || '')
+
+  const params = `input: {
+        userId: 6
+        ${data.name ? `fullName: "${data.name}"` : ''}
+        ${data.username ? `username: "${data.username}"` : ''}
+        ${data.bio ? `bio: "${data.bio}"` : ''}
+        ${data.website ? `website: "${data.website}"` : ''}
+        ${data.email ? `email: "${data.email}"` : ''}
+        ${data.phoneNumber ? `phoneNumber: "${data.phoneNumber}"` : ''}
+        ${data.gender ? `gender: "${data}"` : ''}
+        ${data.avatarUrl ? `avatarUrl: "${data.avatarUrl}"` : ''}
+    }`
+
+  const mutation = `mutation {
+    editUserProfile(${params}) {
+      avatarUrl
+      fullName
+      username
+      bio
+      phoneNumber
+      birthDate
+    }
+  }`
+
+  const handleSubmitForm = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/graphql`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          query: mutation
+        })
+      })
+      const content = await response.json()
+      const data = content.data
+      if (data.editUserProfile) {
+        onChange({
+          name: data.editUserProfile.fullName,
+          username: data.editUserProfile.username,
+          bio: data.editUserProfile.bio,
+          website: data.editUserProfile.website,
+          email: data.editUserProfile.email,
+          phoneNumber: data.editUserProfile.phoneNumber,
+          avatarUrl: data.editUserProfile.avatarUrl
+        })
+        setUsername(data.editUserProfile.username)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   return (
     <div className="rounded-lg h-full">
       <div className="p-0">
         <div className="px-4 pt-4 pb-2">
           {/* Profile Header */}
-          <div
-            className="mb-4 flex flex-wrap md:flex-nowrap items-center gap-4">
+          <div className="mb-4 flex flex-wrap md:flex-nowrap items-center gap-4">
             <div className="flex-shrink-0">
-              <div
-                className="ml-[135px] bg-gradient-to-tr from-orange-400 via-pink-500 to-purple-600 w-[50px] h-[50px] rounded-full flex items-center justify-center text-white font-bold">
-                {username.at(0)?.toUpperCase()}
-              </div>
+              {data.avatarUrl ? (
+                <img
+                  src={data.avatarUrl}
+                  alt="Profile"
+                  className="ml-[135px] w-[50px] h-[50px] rounded-full object-cover"
+                />
+              ) : (
+                <div className="ml-[135px] bg-gradient-to-tr from-orange-400 via-pink-500 to-purple-600 w-[50px] h-[50px] rounded-full flex items-center justify-center text-white font-bold">
+                  {username.at(0)?.toUpperCase()}
+                </div>
+              )}
             </div>
             <div>
               <h5 className="mb-1 font-normal text-base dark:text-white">
@@ -62,18 +132,17 @@ export default function EditProfile() {
               <>
                 <Input
                   className="py-1"
-                  value={name}
+                  value={data.name}
                   placeholder="Name"
                   onChange={(e) => {
-                    setName(e.target.value)
+                    onChange({ name: e.target.value })
                     setError((prev) => ({
                       ...prev,
                       name: ''
                     }))
                   }}
                 />
-                <div
-                  className="text-gray-500 dark:text-gray-400 mt-2 text-xs leading-tight">
+                <div className="text-gray-500 dark:text-gray-400 mt-2 text-xs leading-tight">
                   Help people discover your account by using the name you're
                   known by: either your full name, nickname, or business name.
                 </div>
@@ -90,20 +159,18 @@ export default function EditProfile() {
               <>
                 <Input
                   className="py-1"
-                  value={username}
+                  value={data.username}
                   placeholder="Username"
                   onChange={(e) => {
-                    setUsername(e.target.value)
+                    onChange({ username: e.target.value })
                     setError((prev) => ({
                       ...prev,
                       username: ''
                     }))
                   }}
                 />
-                <div
-                  className="text-gray-500 dark:text-gray-400 mt-2 text-xs leading-tight">
-                  In most cases, you'll be able to change your username back
-                  to{' '}
+                <div className="text-gray-500 dark:text-gray-400 mt-2 text-xs leading-tight">
+                  In most cases, you'll be able to change your username back to{' '}
                   {username} for another 14 days.
                 </div>
                 <p className="text-red-500 text-sm">{error.username}</p>
@@ -121,9 +188,9 @@ export default function EditProfile() {
                   className="py-1"
                   disabled
                   placeholder="Website"
-                  value={website}
+                  value={data.website}
                   onChange={(e) => {
-                    setWebsite(e.target.value)
+                    onChange({ website: e.target.value })
                     setError((prev) => ({
                       ...prev,
                       website: ''
@@ -153,12 +220,11 @@ export default function EditProfile() {
                   placeholder="Bio"
                   id="bioTextarea"
                   onChange={(e) => {
-                    setBio(e.target.value)
+                    onChange({ bio: e.target.value })
                     setError((prev) => ({
                       ...prev,
                       bio: ''
                     }))
-                    console.log(bio)
                   }}
                 />
                 <div className="flex mt-1">
@@ -200,9 +266,9 @@ export default function EditProfile() {
                   type="email"
                   className="py-1 w-full"
                   placeholder="Email"
-                  value={email}
+                  value={data.email}
                   onChange={(e) => {
-                    setEmail(e.target.value)
+                    onChange({ email: e.target.value })
                     setError((prev) => ({
                       ...prev,
                       email: ''
@@ -223,10 +289,10 @@ export default function EditProfile() {
                 <Input
                   type="tel"
                   className="py-1 w-full"
-                  value={phoneNumber}
+                  value={data.phoneNumber}
                   placeholder="Phone number"
                   onChange={(e) => {
-                    setPhoneNumber(e.target.value)
+                    onChange({ phoneNumber: e.target.value })
                     setError((prev) => ({
                       ...prev,
                       phoneNumber: ''
@@ -247,9 +313,9 @@ export default function EditProfile() {
                 <Select
                   className="py-1 w-full"
                   placeholder="Select gender"
-                  selectedKeys={new Set(gender ? [gender] : [])}
+                  selectedKeys={new Set(data.gender ? [data.gender] : [])}
                   onChange={(e) => {
-                    setGender(e.target.value)
+                    onChange({ gender: e.target.value })
                     setError((prev) => ({ ...prev, gender: '' }))
                   }}
                 >
@@ -269,8 +335,8 @@ export default function EditProfile() {
             children={
               <div className="form-check d-flex align-items-start">
                 <Checkbox
-                  isSelected={suggestion}
-                  onValueChange={setSuggestion}
+                  isSelected={data.suggestion}
+                  onValueChange={(value) => onChange({ suggestion: value })}
                 />
                 <span className="text-sm leading-1-43 dark:text-gray-400">
                   Choose whether people can see similar account suggestions on
@@ -281,7 +347,9 @@ export default function EditProfile() {
           />
         </div>
         <div className="p-4 flex justify-center items-center gap-3">
-          <Button color="primary">Submit</Button>
+          <Button color="primary" onClick={handleSubmitForm} type="button">
+            Submit
+          </Button>
           <a
             href="#"
             className="text-blue-500 no-underline text-sm dark:text-blue-400"

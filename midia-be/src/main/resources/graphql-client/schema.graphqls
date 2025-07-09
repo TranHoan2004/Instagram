@@ -9,7 +9,7 @@ type Mutation {
     # Post
     createPost(input: CreatePostInput!): CreatePostResp
     # User
-    editUserProfile(input: EditUserInput): Int
+    editUserProfile(input: EditUserInput): UserProfile
 }
 
 type Query {
@@ -39,6 +39,7 @@ type UserProfile {
     birthDate: String
     bio: String
     avatarUrl: String
+    username: String
 }
 
 type UserStats {

@@ -7,6 +7,7 @@ import dev.huyhoangg.midia.business.user.UserCommonService;
 import dev.huyhoangg.midia.codegen.types.EditUserInput;
 import dev.huyhoangg.midia.codegen.types.RegisterUserInput;
 import dev.huyhoangg.midia.codegen.types.RegisterUserResp;
+import dev.huyhoangg.midia.domain.model.user.User;
 import dev.huyhoangg.midia.domain.model.user.UserProfile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,25 +23,9 @@ public class UserMutation {
         return userCommonService.registerUser(input);
     }
 
-    /**
-     * <h4>Edit user profile information</h4>
-     * <p>
-     * This method is a GraphQL mutation annotated with {@code @DgsMutation}, which allows updating a user's profile
-     * and account information based on the input provided via the {@link EditUserInput} object.
-     *
-     * <p>It delegates the update logic to {@code userCommonService.editUserProfile()} for profile details such as bio,
-     * avatar URL, phone number, full name, and gender, and to {@code userCommonService.editUserInformation()} for
-     * basic account details such as username and email.</p>
-     *
-     * <p>The method always returns {@code 200} to indicate a successful operation.</p>
-     *
-     * @param input An {@link EditUserInput} object containing the updated profile and account data for the user.
-     * @return {@code 200} if the update is completed successfully.
-     * @author HoanTX
-     */
     @DgsMutation
-    public int editUserProfile(@InputArgument EditUserInput input) {
-        userCommonService.editUserProfile(input.getUserId(), UserProfile.builder()
+    public dev.huyhoangg.midia.codegen.types.UserProfile editUserProfile(@InputArgument EditUserInput input) {
+        dev.huyhoangg.midia.codegen.types.UserProfile p = userCommonService.editUserProfile(input.getUserId(), UserProfile.builder()
                 .bio(input.getBio())
                 .avatarUrl(input.getAvatarUrl())
                 .phoneNumber(input.getPhoneNumber())
@@ -48,7 +33,14 @@ public class UserMutation {
                 .gender(input.getGender())
                 .build());
 
-        userCommonService.editUserInformation(input.getUserId(), input.getUsername(), input.getEmail());
-        return 200;
+        User u = userCommonService.editUserInformation(input.getUserId(), input.getUsername(), input.getEmail());
+        return dev.huyhoangg.midia.codegen.types.UserProfile.newBuilder()
+                .bio(p.getBio())
+                .avatarUrl(p.getAvatarUrl())
+                .birthDate(p.getBirthDate())
+                .fullName(p.getFullName())
+                .phoneNumber(p.getPhoneNumber())
+                .username(u.getUsername())
+                .build();
     }
 }

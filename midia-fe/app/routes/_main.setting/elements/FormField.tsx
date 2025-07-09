@@ -11,7 +11,8 @@ export const FormField = ({ className, label, children }: FormFieldProps) => {
     <div className="mb-4 flex flex-col sm:flex-row">
       <div className="w-1/4 text-right pr-2 mb-1 sm:mb-0">
         <label
-          className={`font-semibold block dark:text-gray-200 ${className}`}>
+          className={`font-semibold block dark:text-gray-200 ${className}`}
+        >
           {label}
         </label>
       </div>
