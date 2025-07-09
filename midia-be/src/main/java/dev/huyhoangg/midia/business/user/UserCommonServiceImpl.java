@@ -12,7 +12,6 @@ import dev.huyhoangg.midia.domain.repository.user.UserProfileRepository;
 import dev.huyhoangg.midia.domain.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationContext;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -37,7 +36,8 @@ public class UserCommonServiceImpl implements UserCommonService {
     private final UserEventProducer userEventProducer;
     private final RedisTemplate<String, String> redisTemplate;
     private final UserMapper userMapper;
-    private final ApplicationContext context;
+    private final UserProfileRepository upRepo;
+    private final SearchUserRepository suRepo;
 
     @Override
     public RegisterUserResp registerUser(RegisterUserInput input) {
@@ -133,28 +133,60 @@ public class UserCommonServiceImpl implements UserCommonService {
     }
 
     @Override
+    public String getCurrentUserUid() {
+        try {
+            var authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (!(authentication.getPrincipal() instanceof Jwt jwt)) {
+                throw new RuntimeException("Invalid authentication type");
+            }
+
+            String userId = jwt.getSubject();
+            if (userId == null || userId.trim().isEmpty()) {
+                throw new RuntimeException("User ID cannot be null or empty");
+            }
+
+            var user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found for ID: " + userId));
+
+            String uid = user.getUid();
+            if (uid == null || uid.trim().isEmpty()) {
+                throw new RuntimeException("User UID not found for ID: " + userId);
+            }
+
+            return uid;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get current user UID: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public List<User> searchUserByKeyword(String kw) {
-        SearchUserRepository repo = context.getBean(SearchUserRepository.class);
-        List<User> list = repo.findUserByUserNameContaining(kw);
+        List<User> list = suRepo.findUserByUserNameContaining(kw);
         log.info("searchUserByKeyword: {}", list);
-        return list.isEmpty() ? repo.findUserByProfileFullNameContaining(kw) : list;
+        return list.isEmpty() ? suRepo.findUserByProfileFullNameContaining(kw) : list;
     }
 
     @Override
-    public void editUserProfile(String userId, dev.huyhoangg.midia.domain.model.user.UserProfile profile) {
+    public dev.huyhoangg.midia.codegen.types.UserProfile editUserProfile(String userId, UserProfile profile) {
         log.info("editUserProfile: userId={}, profile={}", userId, profile);
-        UserProfileRepository repo = context.getBean(UserProfileRepository.class);
-        repo.updateProfile(profile, userId);
+        UserProfile p = upRepo.updateProfile(profile, userId);
+        return dev.huyhoangg.midia.codegen.types.UserProfile.newBuilder()
+                .bio(p.getBio())
+                .avatarUrl(p.getAvatarUrl())
+                .birthDate(userMapper.localDateToString(p.getBirthDate()))
+                .fullName(p.getFullName())
+                .phoneNumber(p.getPhoneNumber())
+                .build();
     }
 
     @Override
-    public void editUserInformation(String userId, String username, String email) {
+    public User editUserInformation(String userId, String username, String email) {
         log.info("edit user information: user={}", username);
 
         var user = userRepository.findById(userId).orElseThrow(UserNotExistsException::new);
         user.setUsername(username == null ? user.getUsername() : username.trim());
         user.setEmail(email == null ? user.getEmail() : email.trim());
 
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 }

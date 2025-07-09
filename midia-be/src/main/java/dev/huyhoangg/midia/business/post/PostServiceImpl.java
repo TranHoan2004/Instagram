@@ -10,6 +10,7 @@ import dev.huyhoangg.midia.domain.repository.attachment.AttachmentRepository;
 import dev.huyhoangg.midia.domain.repository.post.PostRepository;
 import dev.huyhoangg.midia.domain.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -25,6 +26,7 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final AttachmentRepository attachmentRepository;
+
     @Override
     public List<dev.huyhoangg.midia.codegen.types.Post> getPostsByAuthorId(String authorId) {
         List<Post> posts = postRepository.findByAuthorId(authorId);
@@ -34,25 +36,13 @@ public class PostServiceImpl implements PostService {
                         .build())
                 .toList();
     }
-    
-    private User getDefaultUser() {
-        return userRepository.findByUsername("testuser")
-                .orElseGet(() -> {
-                    User defaultUser = User.builder()
-                            .id(UUID.randomUUID().toString())
-                            .username("testuser")
-                            .email("test@example.com")
-                            .password("password")
-                            .createdAt(Instant.now())
-                            .updatedAt(Instant.now())
-                            .build();
-                    return userRepository.save(defaultUser);
-                });
-    }
 
     @Override
     public CreatePostResp createPost(CreatePostInput input) {
-        User currentUser = getDefaultUser();
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+
         Post post = Post.builder()
                 .id(UUID.randomUUID().toString())
                 .caption(input.getCaption() != null ? input.getCaption() : "")

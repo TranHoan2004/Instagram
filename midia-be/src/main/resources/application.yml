@@ -75,6 +75,8 @@ dgs:
         enabled: true
       scalars:
         enabled: true
+    websocket:
+      enabled: true
 
 jwt:
   signer-key: "3ac67e1f13d6744c9e5158c0508a91da54696589d871c20750f16a24838c49322096f9e541173311b2f11c94bc11734d157b7174bb78b0e2a57d3a2dd4f40ef0"

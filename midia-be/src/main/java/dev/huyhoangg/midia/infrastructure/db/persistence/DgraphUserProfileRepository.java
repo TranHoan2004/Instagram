@@ -27,12 +27,7 @@ public class DgraphUserProfileRepository implements UserProfileRepository {
     DgraphTemplate dgraphTemplate;
 
     @Override
-    public UserProfile save(UserProfile userProfile) {
-        return null;
-    }
-
-    @Override
-    public void updateProfile(UserProfile profile, String userId) {
+    public UserProfile updateProfile(UserProfile profile, String userId) {
         log.info("updateProfile: userId={}, profile={}", userId, profile);
 
         var query = QueryBuilder.builder()
@@ -64,5 +59,6 @@ public class DgraphUserProfileRepository implements UserProfileRepository {
             txn.mutate(mutation);
             txn.commit();
         });
+        return p;
     }
 }

@@ -20,7 +20,6 @@
 <user.password>: string .
 <user.profile>: uid .
 <user.role>: uid .
-<user.social_accounts>: [uid] .
 <user.stats>: uid .
 <user.user_name>: string @index(trigram, hash) .
 
@@ -34,6 +33,14 @@
 <user_stats.total_followers>: int .
 <user_stats.total_followings>: int .
 <user_stats.total_posts>: int .
+
+<notification.type>: string @index(exact) .
+<notification.recipient>: uid .
+<notification.actor>: uid .
+<notification.post>: uid .
+<notification.message>: string .
+<notification.is_read>: bool @index(bool) .
+<notification.created_at>: datetime @index(hour) .
 
 <post.caption>: string .
 <post.visibility>: string .
@@ -112,4 +119,14 @@ type <UserStats> {
 	user_stats.total_followers
 	user_stats.total_followings
 	user_stats.total_posts
+}
+type <Notification> {
+	id
+	notification.type
+	notification.recipient
+	notification.actor
+	notification.post
+	notification.message
+	notification.is_read
+	notification.created_at
 }

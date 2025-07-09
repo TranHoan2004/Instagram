@@ -11,6 +11,7 @@ import dev.huyhoangg.midia.domain.model.user.User;
 import dev.huyhoangg.midia.domain.model.user.UserProfile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Slf4j
 @DgsComponent
@@ -24,6 +25,7 @@ public class UserMutation {
     }
 
     @DgsMutation
+    @PreAuthorize("isAuthenticated()")
     public dev.huyhoangg.midia.codegen.types.UserProfile editUserProfile(@InputArgument EditUserInput input) {
         dev.huyhoangg.midia.codegen.types.UserProfile p = userCommonService.editUserProfile(input.getUserId(), UserProfile.builder()
                 .bio(input.getBio())

@@ -15,6 +15,8 @@ public interface UserCommonService {
 
     User getMyInfo();
 
+    String getCurrentUserUid();
+
     boolean verifyEmail(String token, String id);
 
     User getUserById(String id);
@@ -25,7 +27,7 @@ public interface UserCommonService {
 
     List<dev.huyhoangg.midia.domain.model.user.User> searchUserByKeyword(String kw);
 
-    void editUserProfile(String userId, dev.huyhoangg.midia.domain.model.user.UserProfile profile);
+    UserProfile editUserProfile(String userId, dev.huyhoangg.midia.domain.model.user.UserProfile profile);
 
-    void editUserInformation(String id, String username, String email);
+    dev.huyhoangg.midia.domain.model.user.User editUserInformation(String id, String username, String email);
 }
