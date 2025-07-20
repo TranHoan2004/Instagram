@@ -1,0 +1,199 @@
+type Mutation {
+    # Common
+    registerUser(input: RegisterUserInput!): RegisterUserResp
+    # Auth
+    introspect(token: String): IntrospectResp
+    login(input: LoginInput!): LoginResp
+    refreshToken(refreshToken: String): RefreshTokenResp
+    logout(accessToken: String, refreshToken: String): String
+
+    # Notification
+    markNotificationAsRead(notificationId: ID!): Boolean!
+    markAllNotificationsAsRead: Boolean!
+
+    # Post
+    createPost(input: CreatePostInput!): CreatePostResp
+    # User
+    editUserProfile(input: EditUserInput): UserProfile
+    toggleFollow(targetUserId: ID!): Boolean!
+}
+
+type Query {
+    # User
+    me: User
+    userProfile(userId: ID!): UserProfile
+    user(userId: ID!): User
+    users(first: Int, offset: Int): [User]
+    searchUser(params: String): [SearchUserResp]
+    # Post
+
+    # Notification
+    notifications: NotificationBatch!
+    unreadNotificationCount: Int!
+}
+
+type Subscription {
+    notificationUpdates: Notification!
+}
+
+enum Sort {
+    ASC
+    DESC
+}
+
+"""
+Notifications
+"""
+type NotificationBatch {
+    yesterday: [Notification!]!
+    thisWeek: [Notification!]!
+    earlier: [Notification!]!
+}
+
+type Notification {
+    id: ID!
+    type: NotificationType!
+    message: String!
+    isRead: Boolean!
+    createdAt: String!
+    actor: User!
+    post: Post
+}
+
+enum NotificationType {
+    FOLLOW
+    LIKE
+    COMMENT
+    MENTION
+    POST_CREATED
+}
+
+"""
+User
+"""
+type User @connection {
+    id: ID!
+    username: String!
+    role: String!
+    profile: UserProfile!
+    email: String
+    stats: UserStats!
+    followers(first: Int, after: String): UserConnection
+    followings(first: Int, after: String): UserConnection
+    posts(first: Int, after: String, sort: Sort): PostConnection
+}
+
+type UserProfile {
+    fullName: String!
+    phoneNumber: String
+    birthDate: String
+    bio: String
+    avatarUrl: String
+    username: String
+}
+
+type UserStats {
+    totalFollowings: Long!
+    totalFollowers: Long!
+    totalPosts: Long!
+}
+
+input RegisterUserInput {
+    username: String! @NotBlank(message: "Username must not be blank")
+    firstName: String! @NotBlank(message: "First name must not be blank")
+    lastName: String!
+    email: String! @Email(message: "Invalid email address")
+    password: String! @Size(min: 8, message: "Password must be at least 8 characters long")
+    dob: Date! @Past
+}
+
+type RegisterUserResp {
+    id: ID!
+    message: String
+}
+
+"""
+Auth
+"""
+input LoginInput {
+    emailOrUsername: String! @NotBlank(message: "Email or username must not be blank")
+    password: String! @Size(min: 8, message: "Password must be at least 8 characters long")
+}
+
+type LoginResp {
+    accessToken: String!
+    accessTokenExpiresIn: String!
+    refreshToken: String!
+    refreshTokenExpiresIn: String!
+    message: String
+}
+
+type RefreshTokenResp {
+    accessToken: String!
+    accessTokenExpiresIn: String!
+    message: String
+}
+
+type IntrospectResp {
+    isValid: Boolean!
+}
+
+enum PostVisibility {
+    PUBLIC
+    PRIVATE
+    FRIENDS_ONLY
+}
+
+type Attachment @connection {
+    id: ID!
+    originalLink: String!
+    optimizedLinks: JSON
+    createdAt: String!
+    updatedAt: String
+    deletedAt: String
+}
+
+"""
+Post
+"""
+type Post @connection {
+    id: ID!
+    caption: String
+    visibility: PostVisibility!
+    author: User!
+    attachments: [Attachment!]
+    totalLikes: Long!
+    totalComments: Long!
+    createdAt: Instant!
+    updatedAt: Instant
+    deletedAt: Instant
+}
+
+input CreatePostInput {
+    caption: String
+    visibility: PostVisibility = PUBLIC
+    attachmentIds: [ID!]
+}
+
+type CreatePostResp {
+    post: Post!
+    message: String
+}
+
+type SearchUserResp {
+    id: ID!
+    username: String!
+    avatar: String
+    fullName: String
+}
+
+input EditUserInput {
+    userId: ID!
+    avatarUrl: String
+    fullName: String
+    username: String
+    bio: String
+    email: String
+    phoneNumber: String
+    gender: String
+}

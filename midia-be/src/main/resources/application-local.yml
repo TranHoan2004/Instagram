@@ -1,5 +1,0 @@
-spring:
-  cloud:
-    gcp:
-      credentials:
-        location: classpath:/gc-sa-462516-r4-5eaf3a0b86f0.json

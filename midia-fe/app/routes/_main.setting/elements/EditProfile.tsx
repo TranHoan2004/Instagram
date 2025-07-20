@@ -1,32 +1,47 @@
 import React, { useState } from 'react'
 import { FormField } from './FormField'
 import {
+  addToast,
   Button,
   Checkbox,
   Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalHeader,
   Select,
   SelectItem,
-  Textarea
+  Textarea,
+  type ToastProps,
+  useDisclosure
 } from '@heroui/react'
+import { useAuth } from '~/contexts/AuthContext'
+import { getToken } from '~/services/auth.service'
 
-interface EditProfileProps {
-  data: EditProfileData
-  onChange: (data: Partial<EditProfileData>) => void
-}
-
-export interface EditProfileData {
-  name: string
-  username: string
-  bio: string
-  website: string
-  email: string
-  phoneNumber: string
-  gender: string
+interface ProfileProps {
+  name: string,
+  username: string,
+  bio: string,
+  website: string,
+  email: string,
+  phoneNumber: string,
+  gender: string,
+  avatarUrl: null | string | FormData,
   suggestion: boolean
-  avatarUrl?: string
 }
 
-export default function EditProfile({ data, onChange }: EditProfileProps) {
+export default function EditProfile() {
+  const [data, setData] = useState<ProfileProps>({
+    name: '',
+    username: '',
+    bio: '',
+    website: '',
+    email: '',
+    phoneNumber: '',
+    gender: '',
+    avatarUrl: '',
+    suggestion: false
+  })
   const [error, setError] = useState<{
     name?: string
     username?: string
@@ -36,91 +51,207 @@ export default function EditProfile({ data, onChange }: EditProfileProps) {
     phoneNumber?: string
     gender?: string
   }>({})
+  const { user, updateUser } = useAuth()
+  const { isOpen, onOpen, onOpenChange } = useDisclosure()
+  // const [placement, setPlacement] = useState<ToastPlacement>("bottom-right");
 
-  const [username, setUsername] = useState(() => data.username || '')
+  const buildEditProfileMutation = (userId: string, input: Partial<ProfileProps>) => {
+    const fields = Object.entries(input)
+      .filter(([_, value]) => value)
+      .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+      .join('\n')
 
-  const params = `input: {
-        userId: 6
-        ${data.name ? `fullName: "${data.name}"` : ''}
-        ${data.username ? `username: "${data.username}"` : ''}
-        ${data.bio ? `bio: "${data.bio}"` : ''}
-        ${data.website ? `website: "${data.website}"` : ''}
-        ${data.email ? `email: "${data.email}"` : ''}
-        ${data.phoneNumber ? `phoneNumber: "${data.phoneNumber}"` : ''}
-        ${data.gender ? `gender: "${data}"` : ''}
-        ${data.avatarUrl ? `avatarUrl: "${data.avatarUrl}"` : ''}
-    }`
-
-  const mutation = `mutation {
-    editUserProfile(${params}) {
-      avatarUrl
-      fullName
-      username
-      bio
-      phoneNumber
-      birthDate
+    return `
+    mutation {
+      context: {
+        requiresAuth: true
+      }
+      editUserProfile(input: {
+        userId: "${userId}"
+        ${fields}
+      },
+      context: {
+        requiresAuth: true
+      }) {
+        avatarUrl
+        fullName
+        username
+        bio
+        phoneNumber
+        birthDate
+      }
     }
-  }`
+  `
+  }
 
-  const handleSubmitForm = async () => {
+  const createToast = (
+    title: string,
+    description: string,
+    type: ToastProps['color']
+  ) => {
+    addToast({
+      title: title,
+      description: description,
+      timeout: 4000,
+      shouldShowTimeoutProgress: true,
+      color: type,
+      variant: 'flat'
+    })
+  }
+
+  const handleSubmitForm = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    const mutation = buildEditProfileMutation(user?.id ?? '', data)
+    const result = await updateProfileApi(mutation)
+
+    const profile = result?.data?.editUserProfile
+    if (profile) {
+      updateUser({
+        username: profile.username,
+        email: profile.email,
+        profile: {
+          fullName: profile.fullName,
+          avatarUrl: profile.avatarUrl,
+          bio: profile.bio,
+          phoneNumber: profile.phoneNumber
+        }
+      })
+
+      setData({
+        name: '',
+        username: '',
+        bio: '',
+        website: '',
+        email: '',
+        phoneNumber: '',
+        gender: '',
+        avatarUrl: '',
+        suggestion: false
+      })
+
+      createToast('Successfully!', 'Update your profile successfully.', 'success')
+    }
+  }
+
+  const handleUploadPhoto = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    onClose: () => void
+  ) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const result = await sendFileToServer(file)
+
+    if (result) {
+      updateUser({
+        profile: {
+          fullName: user?.profile?.fullName ?? '',
+          avatarUrl: result
+        }
+      })
+      createToast('Success', 'Avatar updated successfully.', 'success')
+    } else {
+      createToast('Error', 'Failed to update avatar.', 'danger')
+    }
+
+    onClose()
+  }
+
+  const sendFileToServer = async (file: File | null) => {
+    const formData = new FormData();
+    if (file) {
+      formData.append("avatar", file);
+    }
+    formData.append("userId", user?.id ?? "");
+
+    const result = await uploadPhotoApi(formData)
+
+    return result?.userProfile;
+  }
+
+  const handleRemovePhoto = async (onClose: () => void) => {
+    const result = await sendFileToServer(null)
+
+    if (result) {
+      updateUser({
+        profile: {
+          fullName: user?.profile?.fullName ?? '',
+          avatarUrl: ''
+        }
+      })
+      createToast('Successfully!', 'Removed your profile photo.', 'success')
+    } else {
+      createToast('Error', 'Failed to remove avatar.', 'danger')
+    }
+
+    onClose()
+  }
+
+  const updateProfileApi = async (mutation: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/graphql`, {
+      const res = await fetch('http://localhost:8000/graphql', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          query: mutation
-        })
+        body: JSON.stringify({ query: mutation })
       })
-      const content = await response.json()
-      const data = content.data
-      if (data.editUserProfile) {
-        onChange({
-          name: data.editUserProfile.fullName,
-          username: data.editUserProfile.username,
-          bio: data.editUserProfile.bio,
-          website: data.editUserProfile.website,
-          email: data.editUserProfile.email,
-          phoneNumber: data.editUserProfile.phoneNumber,
-          avatarUrl: data.editUserProfile.avatarUrl
-        })
-        setUsername(data.editUserProfile.username)
-      }
-    } catch (e) {
-      console.error(e)
+
+      return await res.json()
+    } catch (error) {
+      console.error('Error during update profile:', error)
+      createToast('Error', 'Failed to update profile.', 'warning')
     }
+  }
+
+  const uploadPhotoApi = async (formData: FormData) => {
+    const token = await getToken()
+
+    const res = await fetch("http://localhost:8000/api/v1/edit_avatar", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    const content = await res.json();
+    return content;
   }
 
   return (
     <div className="rounded-lg h-full">
-      <div className="p-0">
+      {/*<ToastProvider placement={placement} />*/}
+      <form className="p-0" onSubmit={handleSubmitForm}>
         <div className="px-4 pt-4 pb-2">
           {/* Profile Header */}
           <div className="mb-4 flex flex-wrap md:flex-nowrap items-center gap-4">
             <div className="flex-shrink-0">
-              {data.avatarUrl ? (
+              {user?.profile?.avatarUrl?.trim() ? (
                 <img
-                  src={data.avatarUrl}
+                  src={user?.profile?.avatarUrl}
                   alt="Profile"
                   className="ml-[135px] w-[50px] h-[50px] rounded-full object-cover"
                 />
               ) : (
                 <div className="ml-[135px] bg-gradient-to-tr from-orange-400 via-pink-500 to-purple-600 w-[50px] h-[50px] rounded-full flex items-center justify-center text-white font-bold">
-                  {username.at(0)?.toUpperCase()}
+                  {user?.username.at(0)?.toUpperCase()}
                 </div>
               )}
             </div>
             <div>
               <h5 className="mb-1 font-normal text-base dark:text-white">
-                {username}
+                {user?.username}
               </h5>
-              <a
-                href="#"
-                className="text-blue-500 no-underline font-bold text-sm dark:text-blue-400"
+              <Button
+                as="a"
+                className="!p-0 !m-0 !min-h-0 !h-auto !border-0 !bg-transparent !font-inherit
+                      text-blue-500 no-underline font-bold text-sm dark:text-blue-400"
+                onPress={onOpen}
               >
                 Change profile photo
-              </a>
+              </Button>
             </div>
           </div>
 
@@ -135,7 +266,10 @@ export default function EditProfile({ data, onChange }: EditProfileProps) {
                   value={data.name}
                   placeholder="Name"
                   onChange={(e) => {
-                    onChange({ name: e.target.value })
+                    setData((prev) => ({
+                      ...prev,
+                      name: e.target.value
+                    }))
                     setError((prev) => ({
                       ...prev,
                       name: ''
@@ -162,7 +296,10 @@ export default function EditProfile({ data, onChange }: EditProfileProps) {
                   value={data.username}
                   placeholder="Username"
                   onChange={(e) => {
-                    onChange({ username: e.target.value })
+                    setData((prev) => ({
+                      ...prev,
+                      username: e.target.value
+                    }))
                     setError((prev) => ({
                       ...prev,
                       username: ''
@@ -171,7 +308,7 @@ export default function EditProfile({ data, onChange }: EditProfileProps) {
                 />
                 <div className="text-gray-500 dark:text-gray-400 mt-2 text-xs leading-tight">
                   In most cases, you'll be able to change your username back to{' '}
-                  {username} for another 14 days.
+                  {user?.username} for another 14 days.
                 </div>
                 <p className="text-red-500 text-sm">{error.username}</p>
               </>
@@ -190,7 +327,10 @@ export default function EditProfile({ data, onChange }: EditProfileProps) {
                   placeholder="Website"
                   value={data.website}
                   onChange={(e) => {
-                    onChange({ website: e.target.value })
+                    setData((prev) => ({
+                      ...prev,
+                      website: e.target.value
+                    }))
                     setError((prev) => ({
                       ...prev,
                       website: ''
@@ -220,7 +360,10 @@ export default function EditProfile({ data, onChange }: EditProfileProps) {
                   placeholder="Bio"
                   id="bioTextarea"
                   onChange={(e) => {
-                    onChange({ bio: e.target.value })
+                    setData((prev) => ({
+                      ...prev,
+                      bio: e.target.value
+                    }))
                     setError((prev) => ({
                       ...prev,
                       bio: ''
@@ -268,7 +411,10 @@ export default function EditProfile({ data, onChange }: EditProfileProps) {
                   placeholder="Email"
                   value={data.email}
                   onChange={(e) => {
-                    onChange({ email: e.target.value })
+                    setData((prev) => ({
+                      ...prev,
+                      email: e.target.value
+                    }))
                     setError((prev) => ({
                       ...prev,
                       email: ''
@@ -292,7 +438,10 @@ export default function EditProfile({ data, onChange }: EditProfileProps) {
                   value={data.phoneNumber}
                   placeholder="Phone number"
                   onChange={(e) => {
-                    onChange({ phoneNumber: e.target.value })
+                    setData((prev) => ({
+                      ...prev,
+                      phoneNumber: e.target.value
+                    }))
                     setError((prev) => ({
                       ...prev,
                       phoneNumber: ''
@@ -315,7 +464,10 @@ export default function EditProfile({ data, onChange }: EditProfileProps) {
                   placeholder="Select gender"
                   selectedKeys={new Set(data.gender ? [data.gender] : [])}
                   onChange={(e) => {
-                    onChange({ gender: e.target.value })
+                    setData((prev) => ({
+                      ...prev,
+                      gender: e.target.value
+                    }))
                     setError((prev) => ({ ...prev, gender: '' }))
                   }}
                 >
@@ -336,7 +488,12 @@ export default function EditProfile({ data, onChange }: EditProfileProps) {
               <div className="form-check d-flex align-items-start">
                 <Checkbox
                   isSelected={data.suggestion}
-                  onValueChange={(value) => onChange({ suggestion: value })}
+                  onValueChange={(value) =>
+                    setData((prev) => ({
+                      ...prev,
+                      suggestion: value
+                    }))
+                  }
                 />
                 <span className="text-sm leading-1-43 dark:text-gray-400">
                   Choose whether people can see similar account suggestions on
@@ -347,7 +504,7 @@ export default function EditProfile({ data, onChange }: EditProfileProps) {
           />
         </div>
         <div className="p-4 flex justify-center items-center gap-3">
-          <Button color="primary" onClick={handleSubmitForm} type="button">
+          <Button color="primary" type="submit">
             Submit
           </Button>
           <a
@@ -357,7 +514,63 @@ export default function EditProfile({ data, onChange }: EditProfileProps) {
             Temporarily deactivate my account
           </a>
         </div>
-      </div>
+      </form>
+
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <ModalContent className="text-center">
+          {(onClose) => (
+            <>
+              <ModalHeader
+                className="w-full border-b border-gray-200
+                          py-3 text-center font-semibold
+                          flex justify-center items-center"
+              >
+                Change your avatar
+              </ModalHeader>
+              <ModalBody className="p-0 pt-3">
+                <Button
+                  disableAnimation
+                  className="!min-h-0 !h-auto !p-0 !m-0 !border-0 !bg-transparent !font-inherit
+                    text-blue-500 no-underline font-bold text-sm dark:text-blue-400"
+                  onPress={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = (e) => {
+                      if (e.target instanceof HTMLInputElement) {
+                        handleUploadPhoto({ target: e.target } as React.ChangeEvent<HTMLInputElement>, onClose);
+                      }
+                    };
+                    input.click();
+                  }}
+                >
+                  Upload photo
+                </Button>
+                <hr className="border-gray-200" />
+                <Button
+                  disableAnimation
+                  className="!min-h-0 !h-auto !p-0 !m-0 !border-0 !bg-transparent !font-inherit
+                      text-red-500 no-underline font-bold text-sm dark:text-red-500"
+                  onPress={() => {
+                    handleRemovePhoto(onClose);
+                  }}
+                >
+                  Remove current photo
+                </Button>
+                <hr className="border-gray-200" />
+                <Button
+                  as="a"
+                  className="!min-h-0 !h-auto pb-3 !bg-transparent !font-inherit
+                      no-underline font-bold text-sm dark:text-white"
+                  onPress={onClose}
+                >
+                  Cancel
+                </Button>
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   )
 }

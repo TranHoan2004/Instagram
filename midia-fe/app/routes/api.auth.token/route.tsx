@@ -15,7 +15,7 @@ export const action: ActionFunction = async ({ request }: Route.ActionArgs) => {
   ])
 
   return new Response(JSON.stringify({ message: 'Success' }), {
-    //@ts-ignore
+    //@ts-expect-error err
     headers: {
       'Set-Cookie': [accessTokenSetCookie, refreshTokenSetCookie]
     },

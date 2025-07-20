@@ -1,12 +1,12 @@
-import { createContext, use, useEffect, useState } from 'react'
 import { gql, useLazyQuery } from '@apollo/client/index.js'
-import { useNavigate } from 'react-router'
-import type { User } from '~/lib/graphql-types'
+import { createContext, use, useEffect, useState } from 'react'
+import type { User, UserProfile } from '~/lib/graphql-types'
 
 interface AuthContextInterface {
   user: User | null
   isAuthenticated: boolean
   signOut: () => void
+  updateUser: (user: Partial<User>) => void
 }
 
 const ME = gql`
@@ -36,10 +36,22 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const navigate = useNavigate()
-
   const [user, setUser] = useState<User | null>(null)
   const isAuthenticated = !!user
+
+  const updateUser = (updatedUser: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return null // Kiem tra gia tri hien tai cua user
+      return {
+        ...prev, // Giu lai gia tri cu
+        ...updatedUser, // Cap nhat gia tri moi
+        profile: {
+          ...prev.profile,
+          ...updatedUser.profile
+        } as UserProfile
+      }
+    })
+  }
 
   const [getMe] = useLazyQuery(ME, {
     context: {
@@ -64,7 +76,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, [])
 
   return (
-    <AuthContext value={{ user, isAuthenticated, signOut }}>
+    <AuthContext value={{ user, isAuthenticated, signOut, updateUser }}>
       {children}
     </AuthContext>
   )

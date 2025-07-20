@@ -1,3 +1,4 @@
+import { Button } from '@heroui/react'
 import {
   Link,
   redirect,
@@ -6,11 +7,9 @@ import {
   type ActionFunctionArgs,
   type MetaFunction
 } from 'react-router'
-import SignInForm from './SignInForm'
-import { Button } from '@heroui/react'
-import GoogleColoredIcon from '~/components/icons/GoogleColoredIcon'
 import GithubColoredIcon from '~/components/icons/GithubColoredIcon'
-import { AuthProvider } from '~/contexts/AuthContext'
+import GoogleColoredIcon from '~/components/icons/GoogleColoredIcon'
+import SignInForm from './SignInForm'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Midia | Sign In' }]

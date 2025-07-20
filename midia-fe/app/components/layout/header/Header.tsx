@@ -1,4 +1,3 @@
-import { MockNotificationProvider } from '~/routes/_main.notifications/elements/MockNotificationContext'
 import NotificationDropdown from '~/routes/_main.notifications/elements/NotificationDropdown'
 import BrandLogo from '~/components/ui/BrandLogo'
 import SearchBar from '~/components/ui/SearchBar'
@@ -23,9 +22,7 @@ const LayoutHeader = () => {
         </div>
 
         {/* Notifications Dropdown */}
-        <MockNotificationProvider>
-          <NotificationDropdown/>
-        </MockNotificationProvider>
+        <NotificationDropdown/>
 
         <ThemeSwitcher />
       </div>

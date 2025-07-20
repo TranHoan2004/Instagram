@@ -65,10 +65,15 @@ export interface UserStats {
   totalPosts?: number
 }
 
+export interface Attachment {
+  id: string
+  optimizedLinks: string[]
+}
+
 export interface Post {
   id: string
   caption?: string
-  imageUrls?: string[]
+  attachments?: Attachment[]
 }
 
 // Notification API responses

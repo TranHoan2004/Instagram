@@ -1,15 +1,14 @@
-import { PhotoIcon, TagIcon, BookmarkIcon } from '@heroicons/react/24/outline'
+import { BookmarkIcon, PhotoIcon, TagIcon } from '@heroicons/react/24/outline'
 import {
+  BookmarkIcon as BookmarkIconSolid,
   PhotoIcon as PhotoIconSolid,
-  TagIcon as TagIconSolid,
-  BookmarkIcon as BookmarkIconSolid
+  TagIcon as TagIconSolid
 } from '@heroicons/react/24/solid'
-import ProfileInfo from './ProfileInfo'
-import { NavLink, Outlet, useLocation } from 'react-router'
-import ProfileGrid from './ProfileGrid'
-import PostDetailModal from '../../components/post/PostDetailModal'
 import { useState } from 'react'
+import { NavLink, Outlet, useLocation } from 'react-router'
 import type { Post } from '~/lib/types'
+import PostDetailModal from '../../components/post/PostDetailModal'
+import ProfileGrid from './ProfileGrid'
 
 const mockProfileData = {
   username: 'username',
@@ -81,15 +80,15 @@ type TabType = 'posts' | 'saved' | 'tagged'
 
 const ProfilePage = () => {
   const {
-    username,
-    fullName,
-    accountType,
-    bio,
-    website,
-    postCount,
-    followerCount,
-    followingCount,
-    profileImageUrl,
+    //username,
+    //fullName,
+    //accountType,
+    //bio,
+    //website,
+    //postCount,
+    //followerCount,
+    //followingCount,
+    //profileImageUrl,
     posts
   } = mockProfileData
 

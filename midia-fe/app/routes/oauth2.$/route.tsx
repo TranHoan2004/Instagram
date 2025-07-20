@@ -28,7 +28,7 @@ const handleOAuth2LoginRedirect = async (url: URL) => {
   ])
 
   return redirect('/', {
-    //@ts-ignore
+    //@ts-expect-error err
     headers: {
       'Set-Cookie': [accessTokenSetCookie, refreshTokenSetCookie]
     }

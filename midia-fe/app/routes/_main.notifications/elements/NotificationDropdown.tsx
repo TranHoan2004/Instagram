@@ -12,13 +12,14 @@ import {
 } from '@heroui/react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-// import { useNotificationContext } from '~/contexts/NotificationContext'
-import { useMockNotificationContext as useNotificationContext } from './MockNotificationContext'
+import { useNotificationContext } from '~/contexts/NotificationContext'
+import { useAuth } from '~/contexts/AuthContext'
 import NotificationItem from './NotificationItem'
 
 const NotificationDropdown = () => {
 	const [isOpen, setIsOpen] = useState(false)
 	const navigate = useNavigate()
+	const { isAuthenticated } = useAuth()
 	const { 
 		notifications, 
 		unreadCount, 
@@ -61,6 +62,11 @@ const NotificationDropdown = () => {
 		setIsOpen(false)
 	}
 
+	const handleSignIn = () => {
+		navigate('/signin')
+		setIsOpen(false)
+	}
+
 	return (
 		<Dropdown onOpenChange={setIsOpen}>
 			<DropdownTrigger>
@@ -76,7 +82,7 @@ const NotificationDropdown = () => {
 					) : (
 						<BellIconOutline className="size-6 text-gray-400" />
 					)}
-					{unreadCount > 0 && !loading && !error && (
+					{unreadCount > 0 && !loading && !error && isAuthenticated && (
 						<Badge
 							color="danger"
 							size="sm"
@@ -98,7 +104,7 @@ const NotificationDropdown = () => {
 						<div className="px-2 py-2 flex justify-between items-center">
 							<h1 className="text-2xl font-bold font-roboto">Notifications</h1>
 							<div className="flex items-center gap-2">
-								{unreadCount > 0 && !error && (
+								{isAuthenticated && unreadCount > 0 && !error && (
 									<Button
 										size="sm"
 										variant="light"
@@ -109,21 +115,50 @@ const NotificationDropdown = () => {
 										Mark all as read
 									</Button>
 								)}
-								<Button
-									size="sm"
-									variant="light"
-									color="primary"
-									onPress={handleViewAll}
-									className="text-xs font-medium"
-								>
-									View all
-								</Button>
+								{isAuthenticated ? (
+									<Button
+										size="sm"
+										variant="light"
+										color="primary"
+										onPress={handleViewAll}
+										className="text-xs font-medium"
+									>
+										View all
+									</Button>
+								) : (
+									<Button
+										size="sm"
+										variant="light"
+										color="primary"
+										onPress={handleSignIn}
+										className="text-xs font-medium"
+									>
+										Sign In
+									</Button>
+								)}
 							</div>
 						</div>
 					</DropdownItem>
 				</DropdownSection>
 
-				{loading ? (
+				{!isAuthenticated ? (
+					<DropdownSection>
+						<DropdownItem key="unauthenticated" isReadOnly className="opacity-100 cursor-default">
+							<div className="text-center py-8 text-gray-500">
+								<BellIconOutline className="size-12 mx-auto mb-2 opacity-30" />
+								<p className="text-sm mb-2">Sign in to view notifications</p>
+								<Button
+									size="sm"
+									color="primary"
+									onPress={handleSignIn}
+									className="text-xs"
+								>
+									Sign In
+								</Button>
+							</div>
+						</DropdownItem>
+					</DropdownSection>
+				) : loading ? (
 					<DropdownSection>
 						<DropdownItem key="loading" isReadOnly className="opacity-100 cursor-default">
 							<div className="flex justify-center py-8">
@@ -138,17 +173,30 @@ const NotificationDropdown = () => {
 								<BellIconOutline className="size-12 mx-auto mb-2 opacity-30" />
 								<p className="text-sm">Unable to load notifications</p>
 								<p className="text-xs text-gray-400 mt-1">
-									{error.message || error.networkError?.message || 'Please check your connection and try again'}
+									{error.message?.includes('Access Denied') || error.message?.includes('UNAUTHENTICATED')
+										? 'Please sign in to view notifications'
+										: error.message || 'Please check your connection and try again'}
 								</p>
-								<Button
-									size="sm"
-									variant="light"
-									color="primary"
-									onPress={handleRetry}
-									className="text-xs mt-2"
-								>
-									Retry
-								</Button>
+								{error.message?.includes('Access Denied') || error.message?.includes('UNAUTHENTICATED') ? (
+									<Button
+										size="sm"
+										color="primary"
+										onPress={handleSignIn}
+										className="text-xs mt-2"
+									>
+										Sign In
+									</Button>
+								) : (
+									<Button
+										size="sm"
+										variant="light"
+										color="primary"
+										onPress={handleRetry}
+										className="text-xs mt-2"
+									>
+										Retry
+									</Button>
+								)}
 							</div>
 						</DropdownItem>
 					</DropdownSection>

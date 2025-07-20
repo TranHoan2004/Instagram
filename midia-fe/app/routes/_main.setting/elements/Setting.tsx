@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router'
 import { useState } from 'react'
-import EditProfile, { type EditProfileData } from './EditProfile'
+import EditProfile from './EditProfile'
+import { HeroUIProvider } from '@heroui/react'
 
 const navItems = [
   'Edit profile',
@@ -15,21 +16,6 @@ const navItems = [
 
 export const Setting = () => {
   const [selected, setSelected] = useState('Edit profile')
-  const [editData, setEditData] = useState({
-    name: '',
-    username: 'Hehe',
-    bio: '',
-    website: '',
-    email: '',
-    phoneNumber: '',
-    gender: '',
-    avatarUrl: '',
-    suggestion: false
-  })
-
-  const handleChangeEditProfile = (updated: Partial<EditProfileData>) => {
-    setEditData((prev) => ({ ...prev, ...updated }))
-  }
 
   return (
     <main className="flex flex-row min-h-screen">
@@ -70,7 +56,9 @@ export const Setting = () => {
 
       <section className="flex-1 p-4 w-3/4">
         {selected === 'Edit profile' ? (
-          <EditProfile data={editData} onChange={handleChangeEditProfile} />
+          <HeroUIProvider>
+            <EditProfile />
+          </HeroUIProvider>
         ) : (
           <Outlet />
         )}

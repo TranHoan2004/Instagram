@@ -48,7 +48,7 @@ const FollowNotification = ({ notification }: NotificationItemProps) => {
 const LikeNotification = ({ notification }: NotificationItemProps) => {
 	const actorName = notification.actor.profile?.fullName || notification.actor.username
 	const avatarUrl = notification.actor.profile?.avatarUrl || `https://i.pravatar.cc/150?u=${notification.actor.username}`
-	const postImageUrl = notification.post?.imageUrls?.[0] || 'https://via.placeholder.com/150'
+	const postImageUrl = notification.post?.attachments?.[0]?.optimizedLinks?.[0] || 'https://via.placeholder.com/150'
 
 	return (
 		<>
@@ -78,7 +78,7 @@ const LikeNotification = ({ notification }: NotificationItemProps) => {
 const CommentNotification = ({ notification }: NotificationItemProps) => {
 	const actorName = notification.actor.profile?.fullName || notification.actor.username
 	const avatarUrl = notification.actor.profile?.avatarUrl || `https://i.pravatar.cc/150?u=${notification.actor.username}`
-	const postImageUrl = notification.post?.imageUrls?.[0] || 'https://via.placeholder.com/150'
+	const postImageUrl = notification.post?.attachments?.[0]?.optimizedLinks?.[0] || 'https://via.placeholder.com/150'
 
 	return (
 		<>
@@ -110,7 +110,7 @@ const CommentNotification = ({ notification }: NotificationItemProps) => {
 const MentionNotification = ({ notification }: NotificationItemProps) => {
 	const actorName = notification.actor.profile?.fullName || notification.actor.username
 	const avatarUrl = notification.actor.profile?.avatarUrl || `https://i.pravatar.cc/150?u=${notification.actor.username}`
-	const postImageUrl = notification.post?.imageUrls?.[0] || 'https://via.placeholder.com/150'
+	const postImageUrl = notification.post?.attachments?.[0]?.optimizedLinks?.[0] || 'https://via.placeholder.com/150'
 
 	return (
 		<>

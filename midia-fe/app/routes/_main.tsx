@@ -4,12 +4,14 @@ import Header from '~/components/layout/header/Header'
 import LeftSidebar from '~/components/layout/left-nav/LeftSidebar'
 import RightSidebar from '~/components/layout/right-nav/RightSidebar'
 import { AuthProvider } from '~/contexts/AuthContext'
+import { NotificationProvider } from '~/contexts/NotificationContext'
 
 const MainLayout = () => {
   return (
     <AuthProvider>
-      <div className="flex min-h-screen">
-        <style>{`
+      <NotificationProvider>
+        <div className="flex min-h-screen">
+          <style>{`
         :root {
           --left-sidebar-width: 4rem;
           --right-sidebar-width: 0;
@@ -22,20 +24,21 @@ const MainLayout = () => {
         }
       `}</style>
 
-        {/* Left Sidebar */}
-        <LeftSidebar />
+          {/* Left Sidebar */}
+          <LeftSidebar />
 
-        {/* Main Content + Header */}
-        <div className="flex flex-col flex-1 min-w-0">
-          <Header />
-          <main className="flex-1 mt-[60px] w-full">
-            <Outlet />
-          </main>
+          {/* Main Content + Header */}
+          <div className="flex flex-col flex-1 min-w-0">
+            <Header />
+            <main className="flex-1 mt-[60px] w-full">
+              <Outlet />
+            </main>
+          </div>
+
+          {/* Right Sidebar */}
+          <RightSidebar />
         </div>
-
-        {/* Right Sidebar */}
-        <RightSidebar />
-      </div>
+      </NotificationProvider>
     </AuthProvider>
   )
 }
