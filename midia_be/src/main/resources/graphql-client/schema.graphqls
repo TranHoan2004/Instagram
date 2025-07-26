@@ -6,7 +6,7 @@ type Mutation {
     login(input: LoginInput!): LoginResp
     refreshToken(refreshToken: String): RefreshTokenResp
     logout(accessToken: String, refreshToken: String): String
-
+    updatePassword(input: UpdatePasswordInput!): UpdatePasswordResp
     # Notification
     markNotificationAsRead(notificationId: ID!): Boolean!
     markAllNotificationsAsRead: Boolean!
@@ -15,7 +15,18 @@ type Mutation {
     createPost(input: CreatePostInput!): CreatePostResp
     # User
     editUserProfile(input: EditUserInput): UserProfile
+    editUserRole(userId: ID!, roleName: String!): User
+    assignRoleToUsers(roleName: String!, userIds: [ID!]!): Boolean
+    toggleUserStatus(userId: ID!): User
     toggleFollow(targetUserId: ID!): Boolean!
+    adminAddUser(input: AdminAddUserInput!): User
+
+    # Comment
+    createComment(input: CommentInput!): Comment!
+    deleteComment(id: ID!): Boolean!
+    likeComment(commentId: ID!): Boolean!
+    unlikeComment(commentId: ID!): Boolean!
+
 }
 
 type Query {
@@ -23,10 +34,13 @@ type Query {
     me: User
     userProfile(userId: ID!): UserProfile
     user(userId: ID!): User
-    users(first: Int, offset: Int): [User]
+    users(first: Int, after: String): UserConnection
+    suggestUsers(first: Int, after: String): UserConnection
     searchUser(params: String): [SearchUserResp]
     # Post
-
+    post(postId: ID!): Post
+    postsByUser(userId: ID!, first: Int, after: String, sort: Sort): PostConnection
+    newsFeed(first: Int, after: String): PostConnection
     # Notification
     notifications: NotificationBatch!
     unreadNotificationCount: Int!
@@ -81,6 +95,7 @@ type User @connection {
     followers(first: Int, after: String): UserConnection
     followings(first: Int, after: String): UserConnection
     posts(first: Int, after: String, sort: Sort): PostConnection
+    socialAccounts: [SocialAccount!]!
 }
 
 type UserProfile {
@@ -96,6 +111,12 @@ type UserStats {
     totalFollowings: Long!
     totalFollowers: Long!
     totalPosts: Long!
+}
+
+type SocialAccount {
+    provider: String
+    sub: String
+    linkedAt: String
 }
 
 input RegisterUserInput {
@@ -148,9 +169,9 @@ type Attachment @connection {
     id: ID!
     originalLink: String!
     optimizedLinks: JSON
-    createdAt: String!
-    updatedAt: String
-    deletedAt: String
+    createdAt: Instant!
+    updatedAt: Instant
+    deletedAt: Instant
 }
 
 """
@@ -162,6 +183,7 @@ type Post @connection {
     visibility: PostVisibility!
     author: User!
     attachments: [Attachment!]
+    comments(first: Int!, after: String): CommentConnection
     totalLikes: Long!
     totalComments: Long!
     createdAt: Instant!
@@ -196,4 +218,44 @@ input EditUserInput {
     email: String
     phoneNumber: String
     gender: String
+}
+
+input UpdatePasswordInput {
+    userId: String!
+    resetToken: String!
+    newPassword: String! @Size(min: 8, message: "Password must be at least 8 characters long")
+}
+
+input AdminAddUserInput {
+    fullName: String! @NotBlank(message: "Full name must not be blank")
+    email: String! @Email(message: "Invalid email address")
+    password: String! @Size(min: 8, message: "Password must be at least 8 characters long")
+    roleName: String! @NotBlank(message: "Role name must not be blank")
+}
+
+type UpdatePasswordResp {
+    success: Boolean!
+    message: String
+}
+
+"""
+Comment
+"""
+type Comment @connection {
+  id: ID!
+  author: User!
+  content: String!
+  parent: Comment
+  replies(first: Int!, after: String): CommentConnection!
+  createdAt: Instant!
+  updatedAt: Instant
+  deletedAt: Instant
+  totalLikes: Long!
+  likedBy (first: Int!, after: String): UserConnection
+}
+
+input CommentInput {
+  postId: ID!
+  parentId: ID
+  content: String!
 }

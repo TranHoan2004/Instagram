@@ -90,6 +90,10 @@ public abstract class AbstractNotifyProcessor {
         try {
             Class<?> clazz = resultObject.getClass();
 
+            if (clazz.getName().startsWith("java.")) {
+                return;
+            }
+
             if ("CreatePostResp".equals(clazz.getSimpleName())) {
                 java.lang.reflect.Method getPost = clazz.getMethod("getPost");
                 Object post = getPost.invoke(resultObject);

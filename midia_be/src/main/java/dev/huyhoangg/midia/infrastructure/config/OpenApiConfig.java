@@ -3,6 +3,7 @@ package dev.huyhoangg.midia.infrastructure.config;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.info.Info;
+
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springdoc.core.utils.Constants;
 import org.springframework.beans.factory.annotation.Value;

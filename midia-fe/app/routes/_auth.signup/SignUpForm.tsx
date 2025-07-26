@@ -58,7 +58,7 @@ const REGISTRATION_MUT = gql`
 `
 
 const SignUpForm = () => {
-  const { control, handleSubmit, formState } = useForm({
+  const { control, handleSubmit } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
       email: '',
@@ -69,7 +69,7 @@ const SignUpForm = () => {
       dob: null
     }
   })
-  const [register, { error: registerError }] = useMutation<
+  const [register, { error: registerError, loading }] = useMutation<
     RegisterUserResp,
     RegisterUserInput
   >(REGISTRATION_MUT)
@@ -77,7 +77,6 @@ const SignUpForm = () => {
   const navigate = useNavigate()
 
   const onSubmit = (data: z.infer<typeof schema>) => {
-    console.log('form submitted', data)
     register({
       variables: { input: data },
       onCompleted: () => {
@@ -252,7 +251,7 @@ const SignUpForm = () => {
         fullWidth
         className="mt-2"
         radius="sm"
-        disabled={formState.isSubmitting}
+        disabled={loading}
       >
         Sign Up
       </Button>

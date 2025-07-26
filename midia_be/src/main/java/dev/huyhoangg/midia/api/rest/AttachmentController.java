@@ -1,6 +1,7 @@
 package dev.huyhoangg.midia.api.rest;
 
 import dev.huyhoangg.midia.business.attachment.AttachmentService;
+import dev.huyhoangg.midia.business.storage.ObjectStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,6 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/v1/attachments")
@@ -29,6 +33,7 @@ import java.util.concurrent.CompletableFuture;
 public class AttachmentController {
 
     private final AttachmentService attachmentService;
+    private final ObjectStorageService objectStorageService;
 
     @PostMapping(
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -71,4 +76,28 @@ public class AttachmentController {
                     return ResponseEntity.badRequest().body(response);
                 });
     }
+
+    /**
+     * API lấy signed URL (on-demand URL) cho nhiều attachment.
+     * 
+     * Nhận vào một mảng các attachmentId, trả về map {id: url} với mỗi id là một signed URL
+     * giúp FE truy cập file tạm thời.
+     *
+     * @param ids Danh sách các attachmentId cần lấy URL
+     * @return Map<attachmentId, signedUrl>
+     */
+    @PostMapping("/urls")
+    public ResponseEntity<Map<String, String>> getAttachmentUrls(@RequestBody ArrayList<String> ids) {
+        Map<String, String> result = new HashMap<>();
+        for (String id : ids) {
+            var attachment = attachmentService.getAttachment(id);
+            if (attachment != null) {
+                String objectKey = attachment.getOriginalLink();
+                String url = objectStorageService.getObjectUrl(objectKey); // trả về signed URL
+                result.put(id, url);
+            }
+        }
+        return ResponseEntity.ok(result);
+    }
+
 }

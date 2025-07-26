@@ -48,13 +48,14 @@ public class SecurityConfig {
     }
 
     private static final String[] PUBLIC_ENDPOINTS = {
-        "/graphql",
-        "/graphiql/**",
-        "/actuator/**",
-        "/v3/api-docs/**",
-        "/swagger-ui/**",
-        "/favicon.ico",
-        "/api/v1/verify-email/**",
+            "/graphql",
+            "/graphiql/**",
+            "/actuator/**",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/favicon.ico",
+            "/api/v1/verify-email/**",
+            "/api/v1/reset-password"
     };
 
     private final CorsProperties corsProperties;

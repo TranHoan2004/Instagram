@@ -1,3 +1,17 @@
+export interface Connection<T> {
+  edges: {
+    cursor: string
+    node: T
+  }[]
+
+  pageInfo: {
+    hasPreviousPage: boolean
+    hasNextPage: boolean
+    startCursor?: string
+    endCursor?: string
+  }
+}
+
 export interface RegisterUserInput {
   input: {
     email: string
@@ -7,6 +21,11 @@ export interface RegisterUserInput {
     lastName?: string
     dob: string
   }
+}
+
+export enum Sort {
+  ASC = 'ASC',
+  DESC = 'DESC'
 }
 
 export interface RegisterUserResp {
@@ -49,6 +68,7 @@ export interface User {
   stats?: UserStats
   followers?: User[]
   followings?: User[]
+  posts?: Post[]
 }
 
 export interface UserProfile {
@@ -67,13 +87,51 @@ export interface UserStats {
 
 export interface Attachment {
   id: string
-  optimizedLinks: string[]
+  originalLink: string
+  optimizedLinks: Record<string, string>
+  createdAt?: string
+  updatedAt?: string
 }
 
+//Post
 export interface Post {
   id: string
-  caption?: string
+  caption: string
+  visibility: string
+  createdAt: string
+  updatedAt: string
+  author?: User
+  comments?: Comment[]
   attachments?: Attachment[]
+  totalLikes: number
+  totalComments: number
+}
+
+export interface CommentType {
+  id: string
+  content: string
+  createdAt: string
+  totalLikes: number 
+  author: {
+    id: string
+    username: string
+    profile?: {
+        avatarUrl?: string | null
+    }
+  }
+  isLiked: boolean 
+}
+
+export interface CreatePostInput {
+  caption: string
+  visibility: string
+  attachmentIds?: string[]
+}
+
+export interface CommentInput {
+  postId: string;
+  parentId?: string | null; 
+  content: string;
 }
 
 // Notification API responses
@@ -112,4 +170,17 @@ export interface CreateMentionNotificationResponse {
 // Subscription types
 export interface NotificationUpdatesSubscription {
   notificationUpdates: Notification
+}
+
+//Attachment
+
+//User
+export interface EditUserInput {
+    userId: string
+    avatarUrl: string
+    fullName: string
+    username: string
+    bio: string
+    email: string
+    phoneNumber: string
 }

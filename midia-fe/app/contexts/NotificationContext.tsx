@@ -1,15 +1,25 @@
+import type { ApolloError, ApolloQueryResult } from '@apollo/client'
 import { addToast } from '@heroui/react'
-import { createContext, use, useCallback, useEffect, useMemo, useState } from 'react'
-import type { NotificationType as BackendNotificationType, Notification } from '~/lib/graphql-types'
 import {
-  formatNotificationTime,
+  createContext,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
+import {
   useMarkAllNotificationsAsRead,
   useMarkNotificationAsRead,
   useNotifications,
   useNotificationUpdates,
   useUnreadNotificationCount
-} from '~/lib/notification-api'
-import type { ApolloError, ApolloQueryResult } from '@apollo/client'
+} from '~/hooks/useNotifications'
+import type {
+  NotificationType as BackendNotificationType,
+  Notification
+} from '~/lib/graphql-types'
+import { formatNotificationTime } from '~/lib/notification-api'
 
 export interface NotificationType extends Omit<Notification, 'type'> {
   time?: string
@@ -36,41 +46,66 @@ interface NotificationContextType {
   refetch: () => Promise<ApolloQueryResult<NotificationsQueryResponse>>
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined)
+const NotificationContext = createContext<NotificationContextType | undefined>(
+  undefined
+)
 
 interface NotificationProviderProps {
   children: React.ReactNode
 }
 
-export const NotificationProvider = ({ children }: NotificationProviderProps) => {
-  const [localNotifications, setLocalNotifications] = useState<NotificationBatch>({
-    yesterday: [],
-    thisWeek: [],
-    earlier: []
-  })
+export const NotificationProvider = ({
+  children
+}: NotificationProviderProps) => {
+  const [localNotifications, setLocalNotifications] =
+    useState<NotificationBatch>({
+      yesterday: [],
+      thisWeek: [],
+      earlier: []
+    })
 
-  const { data: notificationsData, loading: notificationsLoading, error: notificationsError, refetch } = useNotifications()
-  const { data: unreadCountData, loading: unreadCountLoading, error: unreadCountError } = useUnreadNotificationCount()
+  const {
+    data: notificationsData,
+    loading: notificationsLoading,
+    error: notificationsError,
+    refetch
+  } = useNotifications()
+  const {
+    data: unreadCountData,
+    loading: unreadCountLoading,
+    error: unreadCountError
+  } = useUnreadNotificationCount()
   const [markAsReadMutation] = useMarkNotificationAsRead()
   const [markAllAsReadMutation] = useMarkAllNotificationsAsRead()
-  
-  const { data: subscriptionData, error: subscriptionError } = useNotificationUpdates()
 
-  const combinedError = notificationsError || unreadCountError || subscriptionError
+  const { data: subscriptionData, error: subscriptionError } =
+    useNotificationUpdates()
 
-  const processNotifications = useCallback((notifications: Notification[]): NotificationType[] => {
-    return notifications.map(notification => ({
-      ...notification,
-      time: formatNotificationTime(notification.createdAt)
-    }))
-  }, [])
+  const combinedError =
+    notificationsError || unreadCountError || subscriptionError
+
+  const processNotifications = useCallback(
+    (notifications: Notification[]): NotificationType[] => {
+      return notifications.map((notification) => ({
+        ...notification,
+        time: formatNotificationTime(notification.createdAt)
+      }))
+    },
+    []
+  )
 
   useEffect(() => {
     if (notificationsData?.notifications) {
       setLocalNotifications({
-        yesterday: processNotifications(notificationsData.notifications.yesterday || []),
-        thisWeek: processNotifications(notificationsData.notifications.thisWeek || []),
-        earlier: processNotifications(notificationsData.notifications.earlier || [])
+        yesterday: processNotifications(
+          notificationsData.notifications.yesterday || []
+        ),
+        thisWeek: processNotifications(
+          notificationsData.notifications.thisWeek || []
+        ),
+        earlier: processNotifications(
+          notificationsData.notifications.earlier || []
+        )
       })
     } else if (notificationsError) {
       console.error('Notifications error:', notificationsError)
@@ -85,7 +120,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   useEffect(() => {
     if (subscriptionData?.notificationUpdates) {
       const newNotification = subscriptionData.notificationUpdates
-      
+
       addToast({
         title: 'New Notification',
         description: `${newNotification.actor.username} ${newNotification.message}`,
@@ -96,40 +131,49 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     }
   }, [subscriptionData, refetch])
 
-  const markAsRead = useCallback(async (id: string) => {
-    try {
-      await markAsReadMutation({ variables: { id } })
-      
-      // Optimistically update local state
-      setLocalNotifications(prev => {
-        const updated = { ...prev }
-        Object.keys(updated).forEach(section => {
-          updated[section as keyof NotificationBatch] = updated[section as keyof NotificationBatch].map(notification => 
-            notification.id === id ? { ...notification, isRead: true } : notification
-          )
+  const markAsRead = useCallback(
+    async (id: string) => {
+      try {
+        await markAsReadMutation({ variables: { notificationId: id } })
+
+        // Optimistically update local state
+        setLocalNotifications((prev) => {
+          const updated = { ...prev }
+          Object.keys(updated).forEach((section) => {
+            updated[section as keyof NotificationBatch] = updated[
+              section as keyof NotificationBatch
+            ].map((notification) =>
+              notification.id === id
+                ? { ...notification, isRead: true }
+                : notification
+            )
+          })
+          return updated
         })
-        return updated
-      })
-    } catch (error) {
-      console.error('Failed to mark notification as read:', error)
-      addToast({
-        title: 'Error',
-        description: 'Failed to mark notification as read',
-        color: 'danger'
-      })
-      throw error
-    }
-  }, [markAsReadMutation])
+      } catch (error) {
+        console.error('Failed to mark notification as read:', error)
+        addToast({
+          title: 'Error',
+          description: 'Failed to mark notification as read',
+          color: 'danger'
+        })
+        throw error
+      }
+    },
+    [markAsReadMutation]
+  )
 
   const markAllAsRead = useCallback(async () => {
     try {
       await markAllAsReadMutation()
-      
+
       // Optimistically update local state
-      setLocalNotifications(prev => {
+      setLocalNotifications((prev) => {
         const updated = { ...prev }
-        Object.keys(updated).forEach(section => {
-          updated[section as keyof NotificationBatch] = updated[section as keyof NotificationBatch].map(notification => ({
+        Object.keys(updated).forEach((section) => {
+          updated[section as keyof NotificationBatch] = updated[
+            section as keyof NotificationBatch
+          ].map((notification) => ({
             ...notification,
             isRead: true
           }))
@@ -153,36 +197,39 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     }
   }, [markAllAsReadMutation])
 
-  const contextValue = useMemo(() => ({
-    notifications: localNotifications,
-    unreadCount: unreadCountData?.unreadNotificationCount || 0,
-    loading: notificationsLoading || unreadCountLoading,
-    error: combinedError,
-    markAsRead,
-    markAllAsRead,
-    refetch
-  }), [
-    localNotifications,
-    unreadCountData?.unreadNotificationCount,
-    notificationsLoading,
-    unreadCountLoading,
-    combinedError,
-    markAsRead,
-    markAllAsRead,
-    refetch
-  ])
+  const contextValue = useMemo(
+    () => ({
+      notifications: localNotifications,
+      unreadCount: unreadCountData?.unreadNotificationCount || 0,
+      loading: notificationsLoading || unreadCountLoading,
+      error: combinedError,
+      markAsRead,
+      markAllAsRead,
+      refetch
+    }),
+    [
+      localNotifications,
+      unreadCountData?.unreadNotificationCount,
+      notificationsLoading,
+      unreadCountLoading,
+      combinedError,
+      markAsRead,
+      markAllAsRead,
+      refetch
+    ]
+  )
 
   return (
-    <NotificationContext value={contextValue}>
-      {children}
-    </NotificationContext>
+    <NotificationContext value={contextValue}>{children}</NotificationContext>
   )
 }
 
 export const useNotificationContext = () => {
   const context = use(NotificationContext)
   if (!context) {
-    throw new Error('useNotificationContext must be used within a NotificationProvider')
+    throw new Error(
+      'useNotificationContext must be used within a NotificationProvider'
+    )
   }
   return context
-} 
+}

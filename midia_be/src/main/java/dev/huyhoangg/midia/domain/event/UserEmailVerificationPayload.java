@@ -5,9 +5,4 @@ import lombok.With;
 
 @Builder
 @With
-public record UserEmailVerificationPayload(
-        String userId,
-        String email,
-        String fullName
-) {
-}
+public record UserEmailVerificationPayload(String userId, String email, String fullName) {}

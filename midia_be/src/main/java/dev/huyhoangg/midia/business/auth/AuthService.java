@@ -1,10 +1,11 @@
 package dev.huyhoangg.midia.business.auth;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 import dev.huyhoangg.midia.codegen.types.IntrospectResp;
 import dev.huyhoangg.midia.codegen.types.LoginInput;
 import dev.huyhoangg.midia.codegen.types.LoginResp;
 import dev.huyhoangg.midia.codegen.types.RefreshTokenResp;
-import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
 

@@ -2,6 +2,7 @@ package dev.huyhoangg.midia.domain.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import dev.huyhoangg.midia.dgraph.annotation.DgraphNode;
 import dev.huyhoangg.midia.dgraph.annotation.DgraphPredicate;
 import dev.huyhoangg.midia.domain.model.DgraphBaseModel;
@@ -14,6 +15,7 @@ import lombok.*;
 @Builder
 @DgraphNode
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserStats extends DgraphBaseModel {
     @DgraphPredicate("user_stats.total_posts")
     @Builder.Default

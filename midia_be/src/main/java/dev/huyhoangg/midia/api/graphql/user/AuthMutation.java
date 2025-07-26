@@ -1,19 +1,23 @@
 package dev.huyhoangg.midia.api.graphql.user;
 
+import jakarta.servlet.http.Cookie;
+
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
 import com.netflix.graphql.dgs.DgsMutation;
 import com.netflix.graphql.dgs.InputArgument;
 import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData;
+
 import dev.huyhoangg.midia.business.auth.AuthService;
 import dev.huyhoangg.midia.business.auth.UnauthenticatedException;
 import dev.huyhoangg.midia.codegen.types.IntrospectResp;
 import dev.huyhoangg.midia.codegen.types.LoginInput;
 import dev.huyhoangg.midia.codegen.types.LoginResp;
 import dev.huyhoangg.midia.codegen.types.RefreshTokenResp;
-import jakarta.servlet.http.Cookie;
+import dev.huyhoangg.midia.codegen.types.UpdatePasswordResp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;

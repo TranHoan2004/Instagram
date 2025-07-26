@@ -9,6 +9,7 @@ import dev.huyhoangg.midia.business.post.PostService;
 import dev.huyhoangg.midia.codegen.types.CreatePostInput;
 import dev.huyhoangg.midia.codegen.types.CreatePostResp;
 import lombok.RequiredArgsConstructor;
+
 @DgsComponent
 @RequiredArgsConstructor
 public class PostMutation {
@@ -20,4 +21,4 @@ public class PostMutation {
     public CreatePostResp createPost(@InputArgument CreatePostInput input) {
         return postService.createPost(input);
     }
-} 
+}

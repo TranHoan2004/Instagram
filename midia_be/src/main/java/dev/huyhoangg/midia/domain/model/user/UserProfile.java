@@ -1,6 +1,8 @@
 package dev.huyhoangg.midia.domain.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import dev.huyhoangg.midia.dgraph.annotation.DgraphNode;
 import dev.huyhoangg.midia.dgraph.annotation.DgraphPredicate;
 import dev.huyhoangg.midia.domain.model.DgraphBaseModel;
@@ -16,6 +18,7 @@ import java.time.LocalDate;
 @DgraphNode
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserProfile extends DgraphBaseModel {
     @DgraphPredicate("user_profile.full_name")
     private String fullName;
@@ -34,4 +37,5 @@ public class UserProfile extends DgraphBaseModel {
 
     @DgraphPredicate("user_profile.gender")
     private String gender;
+    
 }

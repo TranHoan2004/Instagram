@@ -1,10 +1,19 @@
-import { gql, useLazyQuery } from '@apollo/client/index.js'
-import { createContext, use, useEffect, useState } from 'react'
+import {
+  ApolloError,
+  gql,
+  useMutation,
+  useQuery
+} from '@apollo/client/index.js'
+import { createContext, use } from 'react'
+import { useFetcher, useNavigate } from 'react-router'
 import type { User, UserProfile } from '~/lib/graphql-types'
 
 interface AuthContextInterface {
-  user: User | null
+  user?: User
   isAuthenticated: boolean
+  loading: boolean
+  error: ApolloError | undefined
+  refetch: () => unknown
   signOut: () => void
   updateUser: (user: Partial<User>) => void
 }
@@ -23,21 +32,37 @@ const ME = gql`
         phoneNumber
         bio
       }
+      stats {
+        totalPosts
+        totalFollowers
+        totalFollowings
+      }
     }
   }
 `
 
-export const AuthContext = createContext<AuthContextInterface | undefined>(
-  undefined
-)
+const SIGN_OUT = gql`
+  mutation SignOut {
+    logout
+  }
+`
+
+export const AuthContext = createContext<AuthContextInterface>({
+  user: undefined,
+  loading: true,
+  error: undefined,
+  refetch: () => {},
+  isAuthenticated: false,
+  signOut: () => {}
+})
 
 interface AuthProviderProps {
   children: React.ReactNode
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(null)
-  const isAuthenticated = !!user
+  const navigate = useNavigate()
+  const fetcher = useFetcher()
 
   const updateUser = (updatedUser: Partial<User>) => {
     setUser((prev) => {
@@ -53,32 +78,37 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     })
   }
 
-  const [getMe] = useLazyQuery(ME, {
+  const { data, loading, error, refetch } = useQuery(ME, {
     context: {
       requiresAuth: true
     },
+    fetchPolicy: 'cache-first'
+  })
 
-    onCompleted: (data) => {
-      setUser(data.me)
+  const [signOutMutation, { client }] = useMutation(SIGN_OUT, {
+    context: {
+      requiresAuth: true
     },
-
-    onError: () => {
-      setUser(null)
+    onCompleted: () => {
+      client.resetStore()
+      navigate('/signin')
     }
   })
 
-  const signOut = () => {
-    setUser(null)
+  const user = data?.me
+  const isAuthenticated = !loading && !error && !!user
+
+  const signOut = async () => {
+    await fetcher.submit(null, { method: 'POST', action: '/api/auth/logout' })
+    signOutMutation()
   }
 
-  useEffect(() => {
-    getMe()
-  }, [])
-
   return (
-    <AuthContext value={{ user, isAuthenticated, signOut, updateUser }}>
+    <AuthContext.Provider
+      value={{ user, loading, error, refetch, isAuthenticated, signOut, updateUser }}
+    >
       {children}
-    </AuthContext>
+    </AuthContext.Provider>
   )
 }
 

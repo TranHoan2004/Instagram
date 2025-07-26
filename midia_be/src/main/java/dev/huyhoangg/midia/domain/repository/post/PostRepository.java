@@ -2,10 +2,10 @@ package dev.huyhoangg.midia.domain.repository.post;
 
 import dev.huyhoangg.midia.domain.model.post.Post;
 import dev.huyhoangg.midia.domain.repository.SortDirection;
-import graphql.relay.Connection;
 
 import org.springframework.lang.Nullable;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PostRepository {
@@ -14,7 +14,7 @@ public interface PostRepository {
 
     Optional<Post> findById(String id);
 
-    Connection<Post> findByAuthorIdOrderByCreatedAt(
+    List<Post> findByAuthorIdOrderByCreatedAt(
             String authorId, @Nullable Integer first, @Nullable String after, SortDirection sortDirection);
 
     void deleteById(String id);

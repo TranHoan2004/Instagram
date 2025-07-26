@@ -15,6 +15,7 @@ import {
 import { setContext } from '@apollo/client/link/context'
 import { onError } from '@apollo/client/link/error'
 import { getToken, refreshToken } from '~/services/auth.service'
+import { relayStylePagination } from '@apollo/client/utilities'
 
 const httpLink = new HttpLink({
   uri: `${import.meta.env.VITE_API_URL}/graphql`,
@@ -106,10 +107,22 @@ const conditionalLink = split(
   httpLink
 )
 
+const cache = new InMemoryCache({
+  typePolicies: {
+    Query: {
+      fields: {
+        me: { merge: true },
+        suggestUsers: relayStylePagination(),
+        newsFeed: relayStylePagination()
+      }
+    }
+  }
+})
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const makeClient = (request?: Request) => {
   return new ApolloClient({
-    cache: new InMemoryCache(),
+    cache: cache,
     link: conditionalLink
   })
 }

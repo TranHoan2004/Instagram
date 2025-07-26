@@ -1,11 +1,14 @@
 package dev.huyhoangg.midia.infrastructure.kafka.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import dev.huyhoangg.midia.business.email.EmailService;
 import dev.huyhoangg.midia.business.user.UserEvent;
 import dev.huyhoangg.midia.domain.event.UserEmailVerificationPayload;
+import dev.huyhoangg.midia.domain.event.PasswordResetPayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +29,17 @@ public class KafkaUserEventConsumer {
             emailService.sendVerificationEmail(userEmailVerificationPayload);
         } catch (IOException e) {
             log.error("Failed to handle user email verified event", e);
+        }
+    }
+
+    @KafkaListener(topics = UserEvent.PASSWORD_RESET, groupId = "midia")
+    public void onPasswordResetEvent(byte[] payload) {
+        try {
+            var passwordResetPayload = objectMapper.readValue(payload, PasswordResetPayload.class);
+            log.info("received password reset payload: {}", passwordResetPayload);
+            emailService.sendResetPasswordEmail(passwordResetPayload);
+        } catch (IOException e) {
+            log.error("Failed to handle password reset event", e);
         }
     }
 }

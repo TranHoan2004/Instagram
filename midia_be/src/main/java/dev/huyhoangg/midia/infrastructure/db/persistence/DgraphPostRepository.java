@@ -11,8 +11,6 @@ import dev.huyhoangg.midia.dgraph.query.QueryParams;
 import dev.huyhoangg.midia.domain.model.post.Post;
 import dev.huyhoangg.midia.domain.repository.SortDirection;
 import dev.huyhoangg.midia.domain.repository.post.PostRepository;
-import dev.huyhoangg.midia.infrastructure.util.ConnectionUtil;
-import graphql.relay.*;
 import io.dgraph.DgraphProto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +19,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -33,14 +30,20 @@ public class DgraphPostRepository implements PostRepository {
 
     private static final Integer DEFAULT_UNLIMITED = 1000;
     private static final String FIND_POST_BY_AUTHOR_ID_ORDER_BY_CREATED_AT =
-           """
-           query find_posts_by_author_order_by_created_at($authorId: string, $first: int = 1000, $after: string) {
+            """
+           query find_posts_by_author_order_by_created_at($authorId: string, $first: int = 1200, $after: string) {
                 q(func: type(User)) @filter(eq(id, $authorId)) {
-                    posts : user.posts(orderdesc: created_at, first: $first)
-                    @filter(lt(created_at, $after))
-                    {
+                    posts: user.posts(orderdesc: created_at, first: $first) @filter(lt(created_at, $after)) {
                         uid
-                        expand(_all_)
+                        id: id
+                        post.caption
+                        post.visibility
+                        post.author { id }
+                        created_at
+                        updated_at
+                        deleted_at
+                        post.total_likes: post.total_likes
+                        post.total_comments: post.total_comments
                     }
                 }
            }
@@ -52,14 +55,15 @@ public class DgraphPostRepository implements PostRepository {
         if (!isUpdate) {
             post.setUid("_:" + post.getId());
         }
-        return dgraphTemplate.executeMutation(txn -> {
+        return dgraphTemplate.executeMutationWithRetry(txn -> {
             var jsonReq = mappingProcessor.toDgraphNode(post);
             log.info("jsonReq: {}", jsonReq);
             var createPost = DgraphProto.Mutation.newBuilder()
                     .setSetJson(ByteString.copyFromUtf8(jsonReq))
                     .build();
             var createUserPostRelationship = DgraphProto.Mutation.newBuilder()
-                    .setSetJson(ByteString.copyFromUtf8(String.format("""
+                    .setSetJson(ByteString.copyFromUtf8(String.format(
+                            """
                             {
                                 "uid": "%s",
                                 "user.posts": [
@@ -68,7 +72,8 @@ public class DgraphPostRepository implements PostRepository {
                                     }
                                 ]
                             }
-                            """, post.getAuthor().getUid(), post.getUid())))
+                            """,
+                            post.getAuthor().getUid(), post.getUid())))
                     .build();
             var request = DgraphProto.Request.newBuilder()
                     .addMutations(0, createPost)
@@ -104,7 +109,7 @@ public class DgraphPostRepository implements PostRepository {
     }
 
     @Override
-    public Connection<Post> findByAuthorIdOrderByCreatedAt(
+    public List<Post> findByAuthorIdOrderByCreatedAt(
             String authorId, Integer first, String after, SortDirection sortDirection) {
         var query = FIND_POST_BY_AUTHOR_ID_ORDER_BY_CREATED_AT;
         var isSortAsc = sortDirection == SortDirection.ASC;
@@ -118,39 +123,19 @@ public class DgraphPostRepository implements PostRepository {
         }
 
         var finalQuery = query;
-        var finalFirst = first == null ? DEFAULT_UNLIMITED + 1 : first + 1;
         return dgraphTemplate.executeReadOnlyQuery(txn -> {
             var vars = new HashMap<String, String>();
             vars.put("$authorId", authorId);
-            vars.put("$first", String.valueOf(finalFirst));
+            vars.put("$first", first.toString());
             if (isAfter) {
-                vars.put("$after", ConnectionUtil.getValueFromConnectionCursor(new DefaultConnectionCursor(after)));
+                vars.put("$after", after);
             }
-            log.info("query: {}", finalQuery);
 
             var response = txn.queryWithVars(finalQuery, vars);
             var json = objectMapper.readTree(response.getJson().toStringUtf8());
             var postPayload = json.get("q").get(0).get("posts");
-            var posts = objectMapper.readValue(postPayload.toString(), new TypeReference<List<Post>>() {});
 
-            log.info("posts: {}", posts);
-            List<Edge<Post>> edges = posts.stream()
-                    .map(post -> {
-                        var cursor = ConnectionUtil.connectionCursor(
-                                post.getCreatedAt().toString());
-                        return new DefaultEdge<>(post, cursor);
-                    })
-                    .collect(Collectors.toList());
-
-            edges.removeLast(); // remove the extra element in final result
-
-            // hasPreviousPage is false when the first page is fetched
-            // We fetch one extra element, if the number of elements in result is greater than the required limit
-            // then hasNextPage is true
-            var pageInfo = new DefaultPageInfo(
-                    edges.getFirst().getCursor(), edges.getLast().getCursor(), isAfter, posts.size() > finalFirst - 1);
-
-            return new DefaultConnection<>(edges, pageInfo);
+            return objectMapper.readValue(postPayload.toString(), new TypeReference<>() {});
         });
     }
 

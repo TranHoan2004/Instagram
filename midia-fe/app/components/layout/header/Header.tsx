@@ -6,7 +6,7 @@ import ThemeSwitcher from './ThemeSwitcher'
 const LayoutHeader = () => {
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between w-screen h-[60px] px-7 border-neutral-300 dark:border-neutral-600"
+      className="fixed bg-white dark:bg-black top-0 left-0 right-0 z-50 flex items-center justify-between w-screen h-[60px] px-7"
       role="banner"
     >
       <div className="flex items-center gap-10">
@@ -22,7 +22,7 @@ const LayoutHeader = () => {
         </div>
 
         {/* Notifications Dropdown */}
-        <NotificationDropdown/>
+        <NotificationDropdown />
 
         <ThemeSwitcher />
       </div>

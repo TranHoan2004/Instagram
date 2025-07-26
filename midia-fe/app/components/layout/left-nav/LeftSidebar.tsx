@@ -6,7 +6,8 @@ import {
   ChatBubbleLeftIcon,
   FireIcon,
   PhotoIcon,
-  Bars3Icon
+  Bars3Icon,
+  ArrowLeftOnRectangleIcon
 } from '@heroicons/react/24/outline'
 import {
   HomeIcon as HomeIconSolid,
@@ -14,16 +15,21 @@ import {
   ChatBubbleLeftIcon as ChatBubbleLeftIconSolid,
   FireIcon as FireIconSolid,
   PhotoIcon as PhotoIconSolid,
-  Bars3Icon as Bars3IconSolid
 } from '@heroicons/react/24/solid'
 import NavigationItem from '../../ui/NavigationItem'
 import CreatePostModal from '~/routes/_main.create-post/CreatePostModal'
 import { Avatar } from '@heroui/react'
 import { useAuth } from '~/contexts/AuthContext'
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from '@heroui/react'
 
 const LeftSidebar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
 
   const navigationItems = [
     {
@@ -41,7 +47,7 @@ const LeftSidebar = () => {
       icon: <FireIcon className="size-6 min-w-[1.5rem]" />,
       activeIcon: <FireIconSolid className="size-6 min-w-[1.5rem]" />,
       label: 'Explore',
-      path: '/explore'
+      path: '/explore/posts'
     },
     {
       icon: <ChatBubbleLeftIcon className="size-6 min-w-[1.5rem]" />,
@@ -80,12 +86,6 @@ const LeftSidebar = () => {
       activeIcon: <Cog6ToothIconSolid className="size-6 min-w-[1.5rem]" />,
       label: 'Setting',
       path: '/setting'
-    },
-    {
-      icon: <Bars3Icon className="size-6 min-w-[1.5rem] stroke-2" />,
-      activeIcon: <Bars3IconSolid className="size-6 min-w-[1.5rem] stroke-2" />,
-      label: 'More',
-      path: '/#'
     }
   ]
 
@@ -117,6 +117,24 @@ const LeftSidebar = () => {
                 />
               </li>
             ))}
+            <li key="More">
+              <Dropdown placement="right-start">
+                <DropdownTrigger>
+                  <button
+                    type="button"
+                    className="flex cursor-pointer items-center justify-center md:justify-start gap-4 w-full md:px-4 py-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  >
+                    <Bars3Icon className="size-6 min-w-[1.5rem] stroke-2" />
+                    <span className="hidden md:inline">More</span>
+                  </button>
+                </DropdownTrigger>
+                <DropdownMenu aria-label="More menu">
+                  <DropdownItem key="logout" color="danger" onPress={signOut} startContent={<ArrowLeftOnRectangleIcon className="size-5" />}>
+                    Logout
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </li>
           </ul>
         </nav>
       </aside>

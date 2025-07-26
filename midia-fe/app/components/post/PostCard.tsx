@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import {
   BookmarkIcon,
   ChatBubbleLeftIcon,
@@ -11,15 +11,39 @@ import {
 } from '@heroicons/react/24/solid'
 import { Card, CardHeader, CardBody, CardFooter, Textarea } from '@heroui/react'
 import EmojiPicker from '../ui/EmojiPicker'
-import type { Post } from '~/lib/types'
+import type { CommentType, Post } from '~/lib/graphql-types'
 import PostImageCarousel from './PostImageCarousel'
 import Avatar from '../ui/Avatar'
+import { useCommentsByPostId, useCreateComment } from '~/hooks/useComment'
+import useSuggestUsers from '~/hooks/useSuggestion'
 
-const PostCard = ({ post, onOpenComments }: { post: Post; onOpenComments: () => void }) => {
+const PostCard = ({
+  post,
+  onOpenComments
+}: {
+  post: Post
+  onOpenComments: () => void
+}) => {
   const [isLiked, setIsLiked] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [commentText, setCommentText] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const { comments, refetchComments } = useCommentsByPostId(post?.id)
+  const { createComment } = useCreateComment()
+
+  const { edges } = useSuggestUsers({
+    first: 100,
+    fetchPolicy: 'no-cache',
+    nextFetchPolicy: 'no-cache'
+  })
+  const suggestionsUsers = edges.map((e) => e.node)
+  const [isFollowing, setIsFollowing] = useState(
+    !suggestionsUsers.find((u) => u.id === post.author?.id)
+  )
+
+  useEffect(() => {
+    setIsFollowing(!suggestionsUsers.find((u) => u.id === post.author?.id))
+  }, [suggestionsUsers, post.author?.id])
 
   const handleEmojiSelect = (emoji: string) => {
     const textarea = textareaRef.current
@@ -37,10 +61,18 @@ const PostCard = ({ post, onOpenComments }: { post: Post; onOpenComments: () => 
     }
   }
 
-  const handleCommentSubmit = () => {
-    if (commentText.trim()) {
-      console.log('Comment submitted:', commentText)
+  const handleCommentSubmit = async () => {
+    if (!commentText.trim() || !post.id) return
+    try {
+      await createComment({
+        postId: post.id,
+        content: commentText,
+        parentId: null
+      })
+      await refetchComments()
       setCommentText('')
+    } catch (error) {
+      console.error('Error creating comment:', error)
     }
   }
 
@@ -51,12 +83,11 @@ const PostCard = ({ post, onOpenComments }: { post: Post; onOpenComments: () => 
     >
       <CardHeader className="p-4 flex items-center justify-between">
         <Avatar
-          avatar={post.user.avatar}
-          username={post.user.username}
-          isVerified={post.user.isVerified}
-          subtitle={post.user.subtitle}
-          timestamp={post.timestamp}
-          isFollowing={post.user.isFollowing}
+          id={post.author?.id!!}
+          avatar={post.author?.profile?.avatarUrl}
+          username={post.author?.username || ''}
+          subtitle={post.author?.profile?.fullName}
+          isFollowing={isFollowing}
         />
 
         <EllipsisHorizontalIcon
@@ -66,7 +97,10 @@ const PostCard = ({ post, onOpenComments }: { post: Post; onOpenComments: () => 
       </CardHeader>
 
       <CardBody className="p-0">
-        <PostImageCarousel image={post.image} alt="Post content" />
+        <PostImageCarousel
+          image={post.attachments?.[0]?.originalLink}
+          alt="Post content"
+        />
       </CardBody>
 
       <CardFooter className="flex-col gap-4 p-4">
@@ -103,22 +137,33 @@ const PostCard = ({ post, onOpenComments }: { post: Post; onOpenComments: () => 
 
         <div className="w-full space-y-3">
           <p className="text-sm font-bold text-gray-900 dark:text-white">
-            {/* This line cause hydration mismatch. Fix it later */}
-            {(post.likes + (isLiked ? 1 : 0)).toLocaleString()} likes
+            {(post.totalLikes + (isLiked ? 1 : 0)).toLocaleString()} likes
           </p>
           <p className="text-sm text-gray-800 dark:text-gray-200">
             <span className="font-bold cursor-pointer mr-1">
-              {post.user.username}
+              {post.author?.username}
             </span>
             {post.caption}
           </p>
 
-          <span
+          <p
             onClick={onOpenComments}
             className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer"
           >
-            View all {post.comments.length} comments
-          </span>
+            View all {comments?.length} comments
+          </p>
+
+          {comments.slice(0, 2).map((comment: CommentType) => (
+            <p
+              key={comment.id}
+              className="text-sm text-gray-800 dark:text-gray-200"
+            >
+              <span className="font-bold cursor-pointer mr-1">
+                {comment.author?.username}
+              </span>
+              {comment.content}
+            </p>
+          ))}
 
           <div className="flex items-center gap-3 pt-2">
             <Textarea

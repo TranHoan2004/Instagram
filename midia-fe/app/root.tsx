@@ -6,14 +6,17 @@ import {
   Scripts,
   ScrollRestoration
 } from 'react-router'
-
 import type { Route } from './+types/root'
-import './app.css'
-import { Providers } from './providers'
 import type { MetaFunction } from 'react-router'
 
+import './app.css'
+import { Providers } from './providers'
+
 export const links: Route.LinksFunction = () => [
-  { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+  {
+    rel: 'preconnect',
+    href: 'https://fonts.googleapis.com'
+  },
   {
     rel: 'preconnect',
     href: 'https://fonts.gstatic.com',
@@ -30,16 +33,21 @@ export const links: Route.LinksFunction = () => [
     type: 'font/otf',
     crossOrigin: 'anonymous'
   },
-    {
+  {
     rel: 'icon',
     href: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRazMwVsbNCUPn4kCU8khY4mjuoDwIA-uGaCQ&s',
     type: 'image/x-icon'
   }
 ]
 export const meta: MetaFunction = () => {
-  return [{ title: 'Midia' }]
+  return [
+    {
+      title: 'Midia'
+    }
+  ]
 }
 
+// Main layout component
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -50,7 +58,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+        </Providers>
         <ScrollRestoration />
         <Scripts />
       </body>

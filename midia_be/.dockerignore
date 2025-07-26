@@ -1,0 +1,41 @@
+# Build outputs
+build/
+target/
+out/
+*.jar
+*.war
+
+# IDE files
+.idea/
+.vscode/
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+
+# Documentation
+*.md
+docs/
+
+# Logs
+logs/
+*.log
+
+.env*

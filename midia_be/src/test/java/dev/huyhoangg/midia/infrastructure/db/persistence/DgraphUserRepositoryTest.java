@@ -1,6 +1,7 @@
 package dev.huyhoangg.midia.infrastructure.db.persistence;
 
 import dev.huyhoangg.midia.AbstractBaseIntegrationTest;
+import dev.huyhoangg.midia.business.user.UserMapper;
 import dev.huyhoangg.midia.cmd.MigrateSchemaRunner;
 import dev.huyhoangg.midia.dgraph.processor.DgraphMappingProcessor;
 import dev.huyhoangg.midia.domain.model.user.User;
@@ -12,25 +13,28 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Instant;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-@SpringBootTest(classes = {
-        DgraphTemplate.class,
-        DgraphUserRepository.class,
-        DgraphConfig.class,
-        JacksonConfig.class,
-        DgraphMappingProcessor.class
-})
+@SpringBootTest(
+        classes = {
+            DgraphTemplate.class,
+            DgraphUserRepository.class,
+            DgraphConfig.class,
+            JacksonConfig.class,
+            DgraphMappingProcessor.class
+        })
 @Testcontainers
 class DgraphUserRepositoryTest extends AbstractBaseIntegrationTest {
 
     @Autowired
     private DgraphUserRepository dgraphUserRepository;
+
+    @MockitoBean
+    private UserMapper userMapper;
 
     @BeforeAll
     static void setUp(@Autowired DgraphClient dgraphClient) throws Exception {
@@ -39,12 +43,10 @@ class DgraphUserRepositoryTest extends AbstractBaseIntegrationTest {
     }
 
     @Test
-    void existsByUsername() {
-    }
+    void existsByUsername() {}
 
     @Test
-    void findById() {
-    }
+    void findById() {}
 
     @Test
     void save_success() {

@@ -3,8 +3,7 @@ package dev.huyhoangg.midia.infrastructure.oauth2.user;
 import java.util.Map;
 
 public final class OAuth2UserInfoFactory {
-    private OAuth2UserInfoFactory() {
-    }
+    private OAuth2UserInfoFactory() {}
 
     public static OAuth2UserInfo getOAuth2UserInfo(String registrationId, Map<String, Object> attributes) {
         switch (registrationId.toLowerCase()) {

@@ -126,13 +126,14 @@ public class JwtService {
         var stringJoiner = new StringJoiner(" ");
 
         if (Objects.nonNull(user.getRole())) {
-           stringJoiner.add("ROLE_" + user.getRole().getName());
-           var permissions = permissionRepository.findAllByRoleName(user.getRole().getName());
-           if (!CollectionUtils.isEmpty(permissions)) {
-               permissions.forEach(permission -> {
-                   stringJoiner.add(permission.getAction());
-               });
-           }
+            stringJoiner.add("ROLE_" + user.getRole().getName());
+            var permissions =
+                    permissionRepository.findAllByRoleName(user.getRole().getName());
+            if (!CollectionUtils.isEmpty(permissions)) {
+                permissions.forEach(permission -> {
+                    stringJoiner.add(permission.getAction());
+                });
+            }
         }
 
         return stringJoiner.toString();

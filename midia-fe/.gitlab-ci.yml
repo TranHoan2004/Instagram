@@ -54,8 +54,6 @@ build-docker:
   image: docker:24.0.5
   services:
     - name: docker:24.0.5-dind
-  tags:
-    - saas-linux-medium-amd64
   rules:
     - if: $CI_COMMIT_TAG
       when: always
@@ -69,3 +67,24 @@ build-docker:
     - echo "Pushing Docker Image..."
     - docker push $IMAGE_NAME:$VERSION_TAG
     - echo "Done..."
+
+deploy-dev:
+  stage: deploy
+  image: google/cloud-sdk:alpine
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: always
+    - when: never
+  environment: 
+    name: dev
+    url: https://web-dev.midia.io.vn
+  script:
+    - echo "$GCP_SERVICE_ACCOUNT_KEY" | base64 -d > $CI_PROJECT_DIR/gcp-key.json
+    - gcloud auth activate-service-account --key-file=$CI_PROJECT_DIR/gcp-key.json
+    - gcloud config set project $GCP_PROJECT_ID
+    - gcloud compute ssh $VM_NAME --zone=$VM_ZONE --command="
+        sudo docker stop midia-fe || true &&
+        sudo docker rm midia-fe || true &&
+        echo $CI_REGISTRY_PASSWORD | sudo docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY &&
+        sudo docker pull $IMAGE_NAME:$VERSION_TAG
+      "

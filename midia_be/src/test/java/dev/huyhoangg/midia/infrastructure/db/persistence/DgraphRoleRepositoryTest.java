@@ -5,6 +5,7 @@ import dev.huyhoangg.midia.dgraph.processor.DgraphMappingProcessor;
 import dev.huyhoangg.midia.domain.model.user.Role;
 import dev.huyhoangg.midia.infrastructure.config.JacksonConfig;
 import dev.huyhoangg.midia.infrastructure.db.DgraphConfig;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,13 +14,14 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Optional;
 
-@SpringBootTest(classes = {
-        DgraphConfig.class,
-        DgraphRoleRepository.class,
-        DgraphTemplate.class,
-        JacksonConfig.class,
-        DgraphMappingProcessor.class,
-})
+@SpringBootTest(
+        classes = {
+            DgraphConfig.class,
+            DgraphRoleRepository.class,
+            DgraphTemplate.class,
+            JacksonConfig.class,
+            DgraphMappingProcessor.class,
+        })
 @Testcontainers
 class DgraphRoleRepositoryTest extends AbstractBaseIntegrationTest {
 

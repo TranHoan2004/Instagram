@@ -1,6 +1,5 @@
 package dev.huyhoangg.midia.infrastructure.db.persistence;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.huyhoangg.midia.dgraph.processor.DgraphMappingProcessor;
 import dev.huyhoangg.midia.dgraph.query.QueryBuilder;
 import dev.huyhoangg.midia.domain.model.user.User;
@@ -9,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -76,7 +76,8 @@ public class DgraphSearchUserRepository implements SearchUserRepository {
     public List<User> findUserByProfileFullNameContaining(String kw) {
         log.info("findUserByProfileFullNameContaining");
 
-        var query = """
+        var query =
+                """
                 {
                   q(func: type(User)) @cascade {
                     uid
@@ -89,7 +90,8 @@ public class DgraphSearchUserRepository implements SearchUserRepository {
                     }
                   }
                 }
-                """.formatted(kw);
+                """
+                        .formatted(kw);
 
         return getUsersList(query);
     }
@@ -98,7 +100,8 @@ public class DgraphSearchUserRepository implements SearchUserRepository {
         return template.executeReadOnlyQuery(txn -> {
             var response = txn.query(query);
             log.info("response: \n{}", response.getJson().toStringUtf8());
-            return new ArrayList<>(mp.fromDefaultQueryResponse(response.getJson().toStringUtf8(), User.class));
+            return new ArrayList<>(
+                    mp.fromDefaultQueryResponse(response.getJson().toStringUtf8(), User.class));
         });
     }
 }

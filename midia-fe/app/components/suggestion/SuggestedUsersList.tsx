@@ -1,5 +1,6 @@
-import { useState } from 'react'
 import UserListItem from './UserListItem'
+import { useNavigate } from 'react-router'
+import useSuggestUsers from '~/hooks/useSuggestion'
 
 interface User {
   id: string
@@ -17,78 +18,24 @@ interface SuggestedUsersListProps {
 }
 
 const SuggestedUsersList = ({
-  suggestedUsers,
-  onSeeAll,
-  onUserAction,
   className = ''
 }: SuggestedUsersListProps) => {
-  const [users, setUsers] = useState<User[]>(
-    suggestedUsers || [
-      {
-        id: '1',
-        avatar:
-          'https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/953258d4-da1e-49c9-8b8c-cd84e0c8cdc1',
-        username: 'mkbhd',
-        subtitle: 'Follows you',
-        isFollowing: true
-      },
-      {
-        id: '2',
-        avatar:
-          'https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/9470149c-de58-4b20-bf9e-5746770409e9',
-        username: 'marh9',
-        subtitle: 'Follows you',
-        isFollowing: false
-      },
-      {
-        id: '3',
-        avatar:
-          'https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/e4432e0c-5d7b-4107-937c-6f6dc52e1817',
-        username: 'madebyryan',
-        subtitle: 'Suggested for you',
-        isFollowing: false
-      },
-      {
-        id: '4',
-        avatar:
-          'https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/b8882239-170f-4cfd-beb7-b42c22c5505b',
-        username: 'saymekr',
-        subtitle: 'Suggested for you',
-        isFollowing: false
-      },
-      {
-        id: '5',
-        avatar:
-          'https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/47e0374b-4108-4b11-be37-b7b813e3ae71',
-        username: 'jhsmith',
-        subtitle: 'Suggested for you',
-        isFollowing: false
-      }
-    ]
-  )
-
-  const handleUserAction = (userId: string) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === userId ? { ...user, isFollowing: !user.isFollowing } : user
-      )
-    )
-
-    const user = users.find((u) => u.id === userId)
-    if (user) {
-      onUserAction?.(userId, user.isFollowing ? 'unfollow' : 'follow')
-    }
-  }
+  const navigate = useNavigate()
+  const { edges } = useSuggestUsers({
+    first: 5,
+    fetchPolicy: 'no-cache',
+    nextFetchPolicy: 'no-cache'
+  })
+  const users = edges.map((edge) => edge.node)
 
   const handleSeeAll = () => {
-    console.log('See all suggestions')
-    onSeeAll?.()
+    navigate('/explore/people')
   }
 
   return (
     <div className={`w-full p-5 flex flex-col gap-5 ${className}`}>
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between w-full h-[15px]">
+        <div className="flex items-center justify-between w-full">
           <span className="text-sm font-medium leading-3.5">
             Suggested for you
           </span>
@@ -101,15 +48,15 @@ const SuggestedUsersList = ({
           </button>
         </div>
 
-        <div className="flex flex-col gap-[15px]">
+        <div className="flex flex-col gap-4">
           {users.map((user) => (
             <UserListItem
+              className="p-0"
               key={user.id}
-              avatar={user.avatar}
+              id={user.id}
+              avatar={user?.profile?.avatarUrl}
               username={user.username}
-              subtitle={user.subtitle}
-              isFollowing={user.isFollowing}
-              onActionClick={() => handleUserAction(user.id)}
+              subtitle={user.profile?.fullName}
             />
           ))}
         </div>

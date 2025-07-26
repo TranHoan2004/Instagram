@@ -1,7 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit'
+import postModalReducer from './post-modal-slice'
 
 export const store = configureStore({
-  reducer: {},
+  reducer: {
+    postModal: postModalReducer
+  },
   devTools: process.env.NODE_ENV !== 'production'
 })
 

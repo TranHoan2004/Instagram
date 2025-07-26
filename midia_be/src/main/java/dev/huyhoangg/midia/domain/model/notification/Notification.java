@@ -1,6 +1,7 @@
 package dev.huyhoangg.midia.domain.model.notification;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import dev.huyhoangg.midia.dgraph.annotation.DgraphNode;
 import dev.huyhoangg.midia.dgraph.annotation.DgraphPredicate;
 import dev.huyhoangg.midia.dgraph.annotation.Relationship;
@@ -22,6 +23,7 @@ import java.time.Instant;
 @Builder
 @DgraphNode
 @JsonIgnoreProperties(ignoreUnknown=true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Notification extends DgraphBaseModel {
     @DgraphPredicate("id")
     private String id;

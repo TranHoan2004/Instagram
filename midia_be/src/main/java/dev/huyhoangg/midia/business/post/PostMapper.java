@@ -14,7 +14,13 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 )
 public interface PostMapper {
 
-    @Mapping(target = "author", ignore = true)
+    @Mapping(target = "author", source = "author")
     @Mapping(target = "attachments", ignore = true)
+    @Mapping(target = "comments", ignore = true)
     dev.huyhoangg.midia.codegen.types.Post toGraphQLPost(Post post);
+
+    @Mapping(target = "author", source = "author")
+    @Mapping(target = "attachments", source = "attachments")
+    @Mapping(target = "comments", ignore = true)
+    dev.huyhoangg.midia.codegen.types.Post toGraphQLPostWithAttachments(Post post);
 }

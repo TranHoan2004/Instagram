@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Modal, ModalContent, ModalHeader, ModalBody } from '@heroui/react'
+import { useCreatePost } from '~/hooks/usePost'
 import ImageUploadModal from './ImageUploadModal'
 import ImageEditModal from './ImageEditModal'
 
@@ -9,11 +10,19 @@ export type TaggedUser = {
   y: number
 }
 
+export type Attachment = {
+  id?: string
+  file: File
+  uploading?: boolean
+  onDemandLink?: string
+}
+
 export type CreatePostData = {
-  files: File[]
+  files: Attachment[]
+  attachmentIds: string[]
   caption: string
   visibility: string
-  taggedUsers: TaggedUser[]
+  // taggedUsers: TaggedUser[]
 }
 
 interface CreatePostModalProps {
@@ -24,42 +33,39 @@ interface CreatePostModalProps {
 const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
   const [step, setStep] = useState<'upload' | 'edit'>('upload')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [postData, setPostData] = useState<CreatePostData>({
+  const [postInput, setPostInput] = useState<CreatePostData>({
     files: [],
+    attachmentIds: [],
     caption: '',
-    visibility: 'PUBLIC',
-    taggedUsers: []
+    visibility: 'PUBLIC'
   })
 
-  const handleFilesSelect = (files: File[]) => {
-    setPostData((prev) => ({ ...prev, files }))
+  const handleFilesSelect = (attachments: Attachment[]) => {
+    setPostInput((prev) => ({
+      ...prev,
+      files: attachments,
+      attachmentIds: attachments.map((a) => a.id!).filter(Boolean)
+    }))
     setStep('edit')
   }
 
+  const {
+    createPost,
+  } = useCreatePost()
+
   const handleSubmit = async () => {
-    if (postData.files.length === 0) return
+    if (postInput.attachmentIds.length === 0) return
 
     setIsSubmitting(true)
     try {
-      const formData = new FormData()
-      formData.append('caption', postData.caption)
-      formData.append('visibility', postData.visibility)
-      
-      postData.files.forEach((file) => {
-        formData.append('files', file)
+      await createPost({
+        caption: postInput.caption,
+        visibility: postInput.visibility,
+        attachmentIds: postInput.attachmentIds
+        // taggedUsers: postData.taggedUsers
       })
 
-      const response = await fetch('http://localhost:8000/api/posts', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (response.ok) {
-        console.log('Post created successfully')
-        handleClose()
-      } else {
-        console.error('Failed to create post')
-      }
+      handleClose()
     } catch (error) {
       console.error('Error creating post:', error)
     } finally {
@@ -69,11 +75,12 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
 
   const handleClose = () => {
     setStep('upload')
-    setPostData({
+    setPostInput({
       files: [],
+      attachmentIds: [],
       caption: '',
-      visibility: 'PUBLIC',
-      taggedUsers: []
+      visibility: 'PUBLIC'
+      // taggedUsers: []
     })
     setIsSubmitting(false)
     onClose()
@@ -100,21 +107,22 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
             <ImageUploadModal onFilesSelect={handleFilesSelect} />
           ) : (
             <ImageEditModal
-              files={postData.files}
-              caption={postData.caption}
-              visibility={postData.visibility}
-              taggedUsers={postData.taggedUsers}
+              files={postInput.files}
+              caption={postInput.caption}
+              visibility={postInput.visibility}
+              // taggedUsers={postData.taggedUsers}
               isSubmitting={isSubmitting}
               onCaptionChange={(value) =>
-                setPostData((prev) => ({ ...prev, caption: value }))
+                setPostInput((prev) => ({ ...prev, caption: value }))
               }
               onVisibilityChange={(value) =>
-                setPostData((prev) => ({ ...prev, visibility: value }))
+                setPostInput((prev) => ({ ...prev, visibility: value }))
               }
-              onTaggedUsersChange={(users) =>
-                setPostData((prev) => ({ ...prev, taggedUsers: users }))
-              }
+              // onTaggedUsersChange={(users) =>
+              //   setPostData((prev) => ({ ...prev, taggedUsers: users }))
+              // }
               onSubmit={handleSubmit}
+              attachmentIds={postInput.attachmentIds}
             />
           )}
         </ModalBody>
@@ -123,4 +131,4 @@ const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
   )
 }
 
-export default CreatePostModal 
+export default CreatePostModal

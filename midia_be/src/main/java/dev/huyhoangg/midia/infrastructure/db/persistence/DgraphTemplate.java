@@ -1,10 +1,12 @@
 package dev.huyhoangg.midia.infrastructure.db.persistence;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
 import dev.huyhoangg.midia.infrastructure.db.DgraphExecuteException;
 import io.dgraph.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -61,6 +63,26 @@ public class DgraphTemplate {
         }
     }
 
+    public <R> R executeMutationWithRetry(FunctionWithJsonOrTxnException<Transaction, R> action) {
+        int maxRetries = 3;
+        for (int attempt = 0; attempt < maxRetries; attempt++) {
+            try (var txn = dgraphClient.newTransaction()) {
+                try {
+                    return action.apply(txn);
+                } catch (TxnConflictException e) {
+                    log.warn("Dgraph TxnConflictException, retrying... attempt {}/{}", attempt + 1, maxRetries);
+                    if (attempt == maxRetries - 1) throw new DgraphExecuteException(e);
+                    // else, retry
+                } catch (JsonProcessingException | TxnException e) {
+                    throw new DgraphExecuteException(e);
+                } finally {
+                    txn.discard();
+                }
+            }
+        }
+        throw new DgraphExecuteException("Max retries exceeded");
+    }
+
     public void executeMutation(ReturnVoidFunctionWithJsonOrTxnException<Transaction> action) {
         try (var txn = dgraphClient.newTransaction()) {
             try {
@@ -73,18 +95,18 @@ public class DgraphTemplate {
         }
     }
 
-    public void executeUpsert(String query, DgraphProto.Mutation ...mutations) {
+    public void executeUpsert(String query, DgraphProto.Mutation mutation) {
         try (var txn = dgraphClient.newTransaction()) {
             try {
                 var request = DgraphProto.Request.newBuilder()
                         .setQuery(query)
-                        .addAllMutations(Arrays.stream(mutations).toList())
+                        .addMutations(mutation)
                         .setCommitNow(true)
                         .build();
                 txn.doRequest(request);
                 txn.close();
             } catch (TxnException e) {
-                log.error("Error executing upsert", e);
+                log.debug("Error executing upsert", e);
                 throw new DgraphExecuteException(e);
             } finally {
                 txn.discard();

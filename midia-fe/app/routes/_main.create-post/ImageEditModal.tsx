@@ -1,17 +1,25 @@
 import { useState, useRef } from 'react'
-import { Button, Select, SelectItem } from '@heroui/react'
+import { Avatar, Button, Select, SelectItem } from '@heroui/react'
 import UserTagModal from '~/components/layout/left-nav/UserTagModal'
 import EmojiPicker from '~/components/ui/EmojiPicker'
+import { useAuth } from '~/contexts/AuthContext'
+
+interface Attachment {
+  id?: string
+  file: File
+  uploading?: boolean
+  onDemandLink?: string
+}
 
 interface ImageEditModalProps {
-  files: File[]
+  files: Attachment[]
   caption: string
   visibility: string
-  taggedUsers: { username: string; x: number; y: number }[]
+  taggedUsers?: { username: string; x: number; y: number }[]
   isSubmitting: boolean
   onCaptionChange: (value: string) => void
   onVisibilityChange: (value: string) => void
-  onTaggedUsersChange: (
+  onTaggedUsersChange?: (
     users: { username: string; x: number; y: number }[]
   ) => void
   onSubmit: () => void
@@ -27,14 +35,20 @@ const ImageEditModal = ({
   onCaptionChange,
   onVisibilityChange,
   onTaggedUsersChange,
-  onSubmit
+  onSubmit,
 }: ImageEditModalProps) => {
+  const { user } = useAuth()
   const [isTagging, setIsTagging] = useState(false)
   const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 })
   const [currentFileIndex, setCurrentFileIndex] = useState(0)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const currentFile = files[currentFileIndex]
+  const currentAttachment = files[currentFileIndex]
+  const isVideo = currentAttachment?.file.type.startsWith('video/')
+  const src = currentAttachment?.onDemandLink
+    ? currentAttachment.onDemandLink
+    : URL.createObjectURL(currentAttachment.file)
+  const taggedUsersSafe = taggedUsers || []
 
   const handleImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
     const rect = event.currentTarget.getBoundingClientRect()
@@ -44,9 +58,18 @@ const ImageEditModal = ({
     setIsTagging(true)
   }
 
-  const handleCaptionChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
+  const handleVideoClick = (event: React.MouseEvent<HTMLVideoElement>) => {
+    // Ví dụ: mở modal tag user tại vị trí click
+    if (event.currentTarget) {
+      const rect = event.currentTarget.getBoundingClientRect()
+      const x = ((event.clientX - rect.left) / rect.width) * 100
+      const y = ((event.clientY - rect.top) / rect.height) * 100
+      setClickPosition({ x, y })
+      setIsTagging(true)
+    }
+  }
+
+  const handleCaptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
     if (value.length <= MAX_CHARS) {
       onCaptionChange(value)
@@ -58,8 +81,7 @@ const ImageEditModal = ({
       const textarea = textareaRef.current
       const start = textarea.selectionStart
       const end = textarea.selectionEnd
-      const newValue =
-        caption.slice(0, start) + emoji + caption.slice(end)
+      const newValue = caption.slice(0, start) + emoji + caption.slice(end)
       if (newValue.length <= MAX_CHARS) {
         onCaptionChange(newValue)
         setTimeout(() => {
@@ -78,15 +100,24 @@ const ImageEditModal = ({
     <div className="flex h-[600px]">
       {/* Image Preview */}
       <div className="w-2/3 relative">
-        {currentFile && (
-          <img
-            src={URL.createObjectURL(currentFile)}
-            alt="Preview"
-            className="w-full h-full object-contain cursor-pointer"
-            onClick={handleImageClick}
-          />
-        )}
-        {taggedUsers.map((user, index) => (
+        {currentAttachment &&
+          src &&
+          (isVideo ? (
+            <video
+              src={src}
+              className="w-full h-full object-contain cursor-pointer"
+              controls
+              onClick={handleVideoClick}
+            />
+          ) : (
+            <img
+              src={src}
+              alt="Preview"
+              className="w-full h-full object-contain cursor-pointer"
+              onClick={handleImageClick}
+            />
+          ))}
+        {taggedUsersSafe.map((user, index) => (
           <div
             key={`${user.username}-${index}`}
             className="absolute w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs"
@@ -95,19 +126,25 @@ const ImageEditModal = ({
             @
           </div>
         ))}
-        
+
         {/* File navigation arrows */}
         {files.length > 1 && (
           <>
             <button
-              onClick={() => setCurrentFileIndex(prev => Math.max(0, prev - 1))}
+              onClick={() =>
+                setCurrentFileIndex((prev) => Math.max(0, prev - 1))
+              }
               disabled={currentFileIndex === 0}
               className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full disabled:opacity-50"
             >
               ←
             </button>
             <button
-              onClick={() => setCurrentFileIndex(prev => Math.min(files.length - 1, prev + 1))}
+              onClick={() =>
+                setCurrentFileIndex((prev) =>
+                  Math.min(files.length - 1, prev + 1)
+                )
+              }
               disabled={currentFileIndex === files.length - 1}
               className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full disabled:opacity-50"
             >
@@ -121,12 +158,11 @@ const ImageEditModal = ({
       <div className="w-1/3 border-l border-gray-200 dark:border-neutral-700 flex flex-col">
         <div className="p-4 border-b border-gray-200 dark:border-neutral-700">
           <div className="flex items-center gap-2">
-            <img
-              src="https://i.pravatar.cc/150?img=1"
-              alt="User"
+            <Avatar
+              src={user?.profile?.avatarUrl}
               className="w-8 h-8 rounded-full"
             />
-            <span className="font-semibold">username</span>
+            <span className="font-semibold">{user?.username}</span>
           </div>
         </div>
 
@@ -134,17 +170,29 @@ const ImageEditModal = ({
         {files.length > 1 && (
           <div className="p-4 border-b border-gray-200 dark:border-neutral-700">
             <div className="flex gap-2 overflow-x-auto">
-              {files.map((file, index) => (
-                <img
-                  key={index}
-                  src={URL.createObjectURL(file)}
-                  alt={`File ${index + 1}`}
-                  className={`w-16 h-16 object-cover rounded cursor-pointer ${
-                    index === currentFileIndex ? 'ring-2 ring-blue-500' : ''
-                  }`}
-                  onClick={() => setCurrentFileIndex(index)}
-                />
-              ))}
+              {files.map((att, index) => {
+                const isVideo = att.file.type.startsWith('video/')
+                const src = att.onDemandLink
+                  ? att.onDemandLink
+                  : URL.createObjectURL(att.file)
+                return isVideo ? (
+                  <video
+                    key={index}
+                    src={src}
+                    className={`w-16 h-16 object-cover rounded cursor-pointer ${index === currentFileIndex ? 'ring-2 ring-blue-500' : ''}`}
+                    onClick={() => setCurrentFileIndex(index)}
+                    controls
+                  />
+                ) : (
+                  <img
+                    key={index}
+                    src={src}
+                    alt={`File ${index + 1}`}
+                    className={`w-16 h-16 object-cover rounded cursor-pointer ${index === currentFileIndex ? 'ring-2 ring-blue-500' : ''}`}
+                    onClick={() => setCurrentFileIndex(index)}
+                  />
+                )
+              })}
             </div>
           </div>
         )}
@@ -188,7 +236,7 @@ const ImageEditModal = ({
             <SelectItem key="PRIVATE">Private</SelectItem>
             <SelectItem key="FRIENDS_ONLY">Friends Only</SelectItem>
           </Select>
-          
+
           <Button
             color="primary"
             className="w-full"
@@ -199,17 +247,19 @@ const ImageEditModal = ({
           >
             {isSubmitting ? 'Sharing...' : 'Share'}
           </Button>
-        </div>  
+        </div>
       </div>
 
       {isTagging && (
         <UserTagModal
           onClose={() => setIsTagging(false)}
           onTagUser={(username) => {
-            onTaggedUsersChange([
-              ...taggedUsers,
-              { ...clickPosition, username }
-            ])
+            if (onTaggedUsersChange) {
+              onTaggedUsersChange([
+                ...taggedUsersSafe,
+                { ...clickPosition, username }
+              ])
+            }
             setIsTagging(false)
           }}
         />
@@ -218,4 +268,4 @@ const ImageEditModal = ({
   )
 }
 
-export default ImageEditModal 
+export default ImageEditModal

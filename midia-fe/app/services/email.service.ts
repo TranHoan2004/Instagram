@@ -7,3 +7,8 @@ export const verifyEmail = async (token: string, id: string) => {
 export const resendVerificationEmail = async (email: string) => {
   return restApiClient.post('/api/v1/verify-email/resend', { email })
 }
+
+export const sendResetPasswordEmail = async (email: string) => {
+  return restApiClient.post('/api/v1/reset-password', { email })
+}
+

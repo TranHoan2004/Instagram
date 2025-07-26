@@ -142,8 +142,7 @@ public class DgraphPermissionRepository implements PermissionRepository {
         var uids = dgraphTemplate.executeMutation(txn -> {
             var response = txn.mutate(mutation);
             txn.commit();
-            return new HashSet<>(response.getUidsMap()
-                    .keySet());
+            return new HashSet<>(response.getUidsMap().keySet());
         });
 
         return Set.of();

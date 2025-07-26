@@ -1,8 +1,10 @@
 package dev.huyhoangg.midia.dgraph.processor;
 
 import com.google.auto.service.AutoService;
+
 import dev.huyhoangg.midia.dgraph.annotation.DgraphPredicate;
 
+import java.util.Set;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -11,7 +13,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
-import java.util.Set;
 
 @SupportedAnnotationTypes({"dev.huyhoangg.midia.annotation.DgraphPredicate"})
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
@@ -24,8 +25,7 @@ public final class DgraphPredicateEnforceProcessor extends AbstractProcessor {
             "java.lang.Double",
             "java.lang.String",
             "java.lang.Float",
-            "java.time.Instant"
-    );
+            "java.time.Instant");
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -39,7 +39,10 @@ public final class DgraphPredicateEnforceProcessor extends AbstractProcessor {
             var typeStr = typeMirror.toString();
             // Check for primitive or collection types
             if (typeMirror.getKind().isPrimitive() || isCollection(typeMirror)) {
-                error(field, "Field '%s' cannot be primitive or a collection when using @DgraphPredicate", field.getSimpleName());
+                error(
+                        field,
+                        "Field '%s' cannot be primitive or a collection when using @DgraphPredicate",
+                        field.getSimpleName());
             } else if (!ALLOWED_WRAPPER_TYPES.contains(typeStr)) {
                 error(field, "Field '%s' must be one of: %s", field.getSimpleName(), ALLOWED_WRAPPER_TYPES);
             }

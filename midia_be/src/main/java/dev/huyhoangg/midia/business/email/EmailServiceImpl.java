@@ -1,9 +1,12 @@
 package dev.huyhoangg.midia.business.email;
 
-import dev.huyhoangg.midia.domain.event.UserEmailVerificationPayload;
 import jakarta.mail.MessagingException;
+
+import dev.huyhoangg.midia.domain.event.UserEmailVerificationPayload;
+import dev.huyhoangg.midia.domain.event.PasswordResetPayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -26,8 +29,15 @@ public class EmailServiceImpl implements EmailService {
 
     @Value("${email-verification.url}")
     private String emailVerificationUrl;
+
     @Value("${email-verification.valid-duration}")
     private long validDuration;
+
+    @Value("${reset-password.url}")
+    private String resetPasswordUrl;
+
+    @Value("${reset-password.valid-duration}")
+    private long resetPasswordValidDuration;
 
     @Override
     public void sendVerificationEmail(UserEmailVerificationPayload payload) {
@@ -53,5 +63,23 @@ public class EmailServiceImpl implements EmailService {
         helper.setSubject(subject);
         helper.setText(htmlContent, true);
         mailSender.send(mimeMessage);
+    }
+
+    @Override
+    public void sendResetPasswordEmail(PasswordResetPayload payload) {
+        // Lưu resetToken vào Redis với key: "reset-password:<userId>", value: resetToken
+        redisTemplate.opsForValue().set("reset-password:" + payload.userId(), payload.resetToken(), resetPasswordValidDuration, TimeUnit.SECONDS);
+        String url = resetPasswordUrl + "?userId=" + payload.userId() + "&resetToken=" + payload.resetToken();
+        
+        var context = new Context();
+        context.setLocale(Locale.getDefault());
+        context.setVariable("fullName", payload.fullName());
+        context.setVariable("resetUrl", url);
+        var htmlContent = templateEngine.process("reset-password", context);
+        try {
+            sendEmailWithHtml(payload.email(), "Reset your password", htmlContent);
+        } catch (MessagingException e) {
+            log.error("Failed to send reset password email", e);
+        }
     }
 }

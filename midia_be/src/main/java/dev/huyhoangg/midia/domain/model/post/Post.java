@@ -1,15 +1,19 @@
 package dev.huyhoangg.midia.domain.model.post;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import dev.huyhoangg.midia.dgraph.annotation.DgraphNode;
 import dev.huyhoangg.midia.dgraph.annotation.DgraphPredicate;
 import dev.huyhoangg.midia.dgraph.annotation.Relationship;
 import dev.huyhoangg.midia.domain.model.DgraphBaseModel;
 import dev.huyhoangg.midia.domain.model.attachment.Attachment;
+import dev.huyhoangg.midia.domain.model.comment.Comment;
 import dev.huyhoangg.midia.domain.model.user.User;
+import lombok.*;
+
 import java.time.Instant;
 import java.util.Set;
-import lombok.*;
 
 @Getter
 @Setter
@@ -19,6 +23,7 @@ import lombok.*;
 @ToString
 @DgraphNode
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Post extends DgraphBaseModel {
     @DgraphPredicate("id")
     private String id;
@@ -45,6 +50,10 @@ public class Post extends DgraphBaseModel {
     @DgraphPredicate("post.attachments")
     @Relationship
     private Set<Attachment> attachments;
+
+    @DgraphPredicate("post.comments")
+    @Relationship
+    private Set<Comment> comments;
 
     @DgraphPredicate("post.total_likes")
     @Builder.Default

@@ -35,11 +35,12 @@ const SignInForm = () => {
     },
     resolver: zodResolver(schema)
   })
-  const [login, { error }] = useMutation(LOGIN_MUT)
+  const [login, { error, client }] = useMutation(LOGIN_MUT)
   const fetcher = useFetcher()
   const navigate = useNavigate()
 
   const onSubmit = (data: z.infer<typeof schema>) => {
+    client.clearStore()
     login({
       variables: {
         emailOrUsername: data.emailOrUsername,

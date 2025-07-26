@@ -1,10 +1,12 @@
 package dev.huyhoangg.midia.cmd;
 
 import com.google.protobuf.ByteString;
+
 import io.dgraph.DgraphClient;
 import io.dgraph.DgraphProto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
@@ -29,8 +31,7 @@ public class MigrateSchemaRunner implements CommandLineRunner {
         var resource = new ClassPathResource("dgraph-schema/schema.dql");
         var input = resource.getInputStream();
 
-        var schemaOperation = DgraphProto.Operation
-                .newBuilder()
+        var schemaOperation = DgraphProto.Operation.newBuilder()
                 .setSchemaBytes(ByteString.copyFrom(input.readAllBytes()))
                 .setRunInBackground(true)
                 .build();

@@ -1,6 +1,7 @@
 package dev.huyhoangg.midia.infrastructure.db.persistence;
 
 import com.google.protobuf.ByteString;
+
 import dev.huyhoangg.midia.dgraph.processor.DgraphMappingProcessor;
 import dev.huyhoangg.midia.dgraph.query.QueryBuilder;
 import dev.huyhoangg.midia.dgraph.query.QueryParamType;
@@ -10,6 +11,7 @@ import dev.huyhoangg.midia.domain.repository.user.RoleRepository;
 import io.dgraph.DgraphProto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
@@ -48,18 +50,21 @@ public class DgraphRoleRepository implements RoleRepository {
 
             var vars = Collections.singletonMap("$name", name);
             var response = txn.queryWithVars(query, vars);
-            var result = mappingProcessor.fromDefaultQueryResponse(response.getJson().toStringUtf8(), Role.class);
+            var result =
+                    mappingProcessor.fromDefaultQueryResponse(response.getJson().toStringUtf8(), Role.class);
             return result.iterator().next();
         });
     }
 
     @Override
     public void delete(String name) {
-        var query = String.format("""
+        var query = String.format(
+                """
                 {
                     role_uid as var(func: type(Role)) @filter(eq(role.name, "%s")) { uid }
                 }
-                """, name);
+                """,
+                name);
         var mutation = DgraphProto.Mutation.newBuilder()
                 .setDelNquads(ByteString.copyFromUtf8("uid(role_uid) * * ."))
                 .setCond("@if(gt(len(role_uid), 0))")

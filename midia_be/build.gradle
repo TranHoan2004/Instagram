@@ -116,6 +116,7 @@ generateJava {
             "JSON": "Map<String, Object>",
             "UserConnection": "graphql.relay.Connection<dev.huyhoangg.midia.codegen.types.User>",
             "PostConnection": "graphql.relay.Connection<dev.huyhoangg.midia.codegen.types.Post>",
+            "CommentConnection": "graphql.relay.Connection<dev.huyhoangg.midia.codegen.types.Comment>",
     ]
 }
 

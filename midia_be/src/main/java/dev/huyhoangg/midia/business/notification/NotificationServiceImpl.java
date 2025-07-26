@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -167,17 +168,31 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void handlePostNotificationEvent(NotificationPayload payload) {
         try {
-            User actor = userRepository.findById(payload.getActorId())
-                    .orElseThrow(() -> new NotificationException.UserNotFoundException(payload.getActorId()));
+            Optional<User> actorOpt = userRepository.findByIdWithFollowers(payload.getActorId());
+            
+            if (actorOpt.isEmpty()) {
+                log.warn("findByIdWithFollowers failed for user {}, trying regular findById", payload.getActorId());
+                actorOpt = userRepository.findById(payload.getActorId());
+            }
+            
+            User actor = actorOpt.orElseThrow(() -> new NotificationException.UserNotFoundException(payload.getActorId()));
 
-            createPostRelatedNotification(
-                    payload.getActorId(),
-                    actor.getId(),
-                    payload.getPostId(),
-                    NotificationType.POST_CREATED
-            );
+            if (actor.getFollowers() != null && !actor.getFollowers().isEmpty()) {
+                for (User follower : actor.getFollowers()) {
+                    createPostRelatedNotification(
+                            payload.getActorId(),
+                            follower.getId(),
+                            payload.getPostId(),
+                            NotificationType.POST_CREATED
+                    );
+                }
+                log.info("Sent post notifications to {} followers of user {}", 
+                        actor.getFollowers().size(), payload.getActorId());
+            } else {
+                log.info("User {} has no followers to notify", payload.getActorId());
+            }
         } catch (Exception e) {
-            log.error("Failed to handle post notifcation event for actor {}", payload.getActorId(), e);
+            log.error("Failed to handle post notification event for actor {}", payload.getActorId(), e);
             throw e;
         }
     }

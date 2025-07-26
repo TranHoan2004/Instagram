@@ -15,7 +15,8 @@ public abstract class AbstractBaseIntegrationTest {
 
     public static final GenericContainer<?> DGRAPH_CONTAINER = new GenericContainer<>(DGRAPH_IMAGE)
             .withExposedPorts(8080, 9080)
-            .waitingFor(Wait.forHttp("/health").forPort(8080).forStatusCode(200).withStartupTimeout(Duration.ofMinutes(2)));
+            .waitingFor(
+                    Wait.forHttp("/health").forPort(8080).forStatusCode(200).withStartupTimeout(Duration.ofMinutes(2)));
 
     static {
         DGRAPH_CONTAINER.start();
@@ -27,5 +28,3 @@ public abstract class AbstractBaseIntegrationTest {
         registry.add("dgraph.port", () -> DGRAPH_CONTAINER.getMappedPort(9080));
     }
 }
-
-

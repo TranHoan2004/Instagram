@@ -14,6 +14,4 @@ public enum QueryParamType {
     }
 
     private final String value;
-
 }
-

@@ -44,12 +44,23 @@ const SignInPage = () => {
       </h1>
       <div className="w-full max-w-lg mx-auto">
         <SignInForm />
+        
+
         <p className="text-center my-4">
           Don't have an account?{' '}
           <Link className="hover:underline text-primary" to="/signup">
             Sign up now
           </Link>
         </p>
+        {/* Forgot Password Link */}
+        <div className="text-center my-4">
+          <Link 
+            className="text-sm text-primary hover:underline font-medium" 
+            to="/forgot-password"
+          >
+            Forgot your password?
+          </Link>
+        </div>
 
         <div className="relative flex items-center mb-6 w-full">
           <div className="flex-grow border-t border-foreground-300"></div>

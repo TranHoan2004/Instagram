@@ -159,15 +159,15 @@ export default function EditProfile() {
   }
 
   const sendFileToServer = async (file: File | null) => {
-    const formData = new FormData();
+    const formData = new FormData()
     if (file) {
-      formData.append("avatar", file);
+      formData.append('avatar', file)
     }
-    formData.append("userId", user?.id ?? "");
+    formData.append('userId', user?.id ?? '')
 
     const result = await uploadPhotoApi(formData)
 
-    return result?.userProfile;
+    return result?.userProfile
   }
 
   const handleRemovePhoto = async (onClose: () => void) => {
@@ -208,16 +208,16 @@ export default function EditProfile() {
   const uploadPhotoApi = async (formData: FormData) => {
     const token = await getToken()
 
-    const res = await fetch("http://localhost:8000/api/v1/edit_avatar", {
-      method: "POST",
+    const res = await fetch('http://localhost:8000/api/v1/edit_avatar', {
+      method: 'POST',
       headers: {
-        "Authorization": `Bearer ${token}`
+        'Authorization': `Bearer ${token}`
       },
       body: formData
-    });
+    })
 
-    const content = await res.json();
-    return content;
+    const content = await res.json()
+    return content
   }
 
   return (
@@ -226,7 +226,8 @@ export default function EditProfile() {
       <form className="p-0" onSubmit={handleSubmitForm}>
         <div className="px-4 pt-4 pb-2">
           {/* Profile Header */}
-          <div className="mb-4 flex flex-wrap md:flex-nowrap items-center gap-4">
+          <div
+            className="mb-4 flex flex-wrap md:flex-nowrap items-center gap-4">
             <div className="flex-shrink-0">
               {user?.profile?.avatarUrl?.trim() ? (
                 <img
@@ -235,7 +236,8 @@ export default function EditProfile() {
                   className="ml-[135px] w-[50px] h-[50px] rounded-full object-cover"
                 />
               ) : (
-                <div className="ml-[135px] bg-gradient-to-tr from-orange-400 via-pink-500 to-purple-600 w-[50px] h-[50px] rounded-full flex items-center justify-center text-white font-bold">
+                <div
+                  className="ml-[135px] bg-gradient-to-tr from-orange-400 via-pink-500 to-purple-600 w-[50px] h-[50px] rounded-full flex items-center justify-center text-white font-bold">
                   {user?.username.at(0)?.toUpperCase()}
                 </div>
               )}
@@ -276,7 +278,8 @@ export default function EditProfile() {
                     }))
                   }}
                 />
-                <div className="text-gray-500 dark:text-gray-400 mt-2 text-xs leading-tight">
+                <div
+                  className="text-gray-500 dark:text-gray-400 mt-2 text-xs leading-tight">
                   Help people discover your account by using the name you're
                   known by: either your full name, nickname, or business name.
                 </div>
@@ -306,8 +309,10 @@ export default function EditProfile() {
                     }))
                   }}
                 />
-                <div className="text-gray-500 dark:text-gray-400 mt-2 text-xs leading-tight">
-                  In most cases, you'll be able to change your username back to{' '}
+                <div
+                  className="text-gray-500 dark:text-gray-400 mt-2 text-xs leading-tight">
+                  In most cases, you'll be able to change your username back
+                  to{' '}
                   {user?.username} for another 14 days.
                 </div>
                 <p className="text-red-500 text-sm">{error.username}</p>
@@ -337,7 +342,8 @@ export default function EditProfile() {
                     }))
                   }}
                 />
-                <div className="text-gray-500 dark:text-gray-400 mt-2 text-xs leading-tight">
+                <div
+                  className="text-gray-500 dark:text-gray-400 mt-2 text-xs leading-tight">
                   Editing your links is only available on mobile. Visit the
                   Instagram app and edit your profile to change the websites in
                   your bio.
@@ -533,15 +539,15 @@ export default function EditProfile() {
                   className="!min-h-0 !h-auto !p-0 !m-0 !border-0 !bg-transparent !font-inherit
                     text-blue-500 no-underline font-bold text-sm dark:text-blue-400"
                   onPress={() => {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'image/*';
+                    const input = document.createElement('input')
+                    input.type = 'file'
+                    input.accept = 'image/*'
                     input.onchange = (e) => {
                       if (e.target instanceof HTMLInputElement) {
-                        handleUploadPhoto({ target: e.target } as React.ChangeEvent<HTMLInputElement>, onClose);
+                        handleUploadPhoto({ target: e.target } as React.ChangeEvent<HTMLInputElement>, onClose)
                       }
-                    };
-                    input.click();
+                    }
+                    input.click()
                   }}
                 >
                   Upload photo
@@ -552,7 +558,7 @@ export default function EditProfile() {
                   className="!min-h-0 !h-auto !p-0 !m-0 !border-0 !bg-transparent !font-inherit
                       text-red-500 no-underline font-bold text-sm dark:text-red-500"
                   onPress={() => {
-                    handleRemovePhoto(onClose);
+                    handleRemovePhoto(onClose)
                   }}
                 >
                   Remove current photo

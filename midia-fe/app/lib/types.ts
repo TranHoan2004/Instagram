@@ -1,23 +1,3 @@
-export interface Post {
-  user: {
-    avatar: string
-    username: string
-    isVerified: boolean
-    subtitle?: string
-    isFollowing?: boolean
-  }
-  id: string
-  timestamp: string
-  image: string | string[]
-  likes: number
-  caption: string
-  comments: Comment[]
-  likedBy?: {
-    username: string
-    avatar: string
-  }
-}
-
 export interface Comment {
   id?: string
   username: string
@@ -35,4 +15,17 @@ export interface AvatarProps {
   isFollowing?: boolean
   onActionClick?: () => void
   className?: string
+}
+
+export interface UploadResult {
+  attachmentId: string
+  file: File
+}
+
+//Create post
+export interface CreatePostData {
+  caption?: string
+  visibility?: string
+  attachmentIds?: string[]
+  taggedUsers?: Array<{ username: string; x: number; y: number }>
 }

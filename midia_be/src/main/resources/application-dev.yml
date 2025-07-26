@@ -1,0 +1,17 @@
+dgraph:
+  cloud:
+    connection: ${DGRAPH_CONNECTION_STRING}
+
+logging:
+  level:
+    root: info
+    dev.huyhoangg.midia: debug
+
+cors:
+  allowed-origins: ${WEB_FRONTEND_URLS}
+
+newsfeed:
+  generation:
+    batch-size: 100
+    cron-expression: "0 */15 * * * *" # every 15 minute
+    cache-duration: 16 # in minutes

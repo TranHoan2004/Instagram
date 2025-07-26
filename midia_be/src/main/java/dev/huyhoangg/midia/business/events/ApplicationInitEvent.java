@@ -6,6 +6,7 @@ import dev.huyhoangg.midia.domain.repository.user.PermissionRepository;
 import dev.huyhoangg.midia.domain.repository.user.RoleRepository;
 import dev.huyhoangg.midia.domain.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -34,8 +35,7 @@ public class ApplicationInitEvent {
             new Permission("COMMENT_WRITE"),
             new Permission("COMMENT_UPDATE"),
             new Permission("COMMENT_DELETE"),
-            new Permission("COMMENT_REACT")
-    );
+            new Permission("COMMENT_REACT"));
 
     static Set<Permission> ADMIN_PERMISSIONS = new HashSet<>();
 
@@ -48,9 +48,7 @@ public class ApplicationInitEvent {
     }
 
     @Bean
-    @ConditionalOnProperty(
-            name = {"dgraph.address", "dgraph.port"}
-    )
+    @ConditionalOnProperty(name = {"dgraph.address", "dgraph.port"})
     public ApplicationRunner init() {
         return args -> {
             if (!args.containsOption("--bootstrap")) {

@@ -5,6 +5,7 @@ import dev.huyhoangg.midia.business.user.UserEventProducer;
 import dev.huyhoangg.midia.domain.event.UserEmailVerificationPayload;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,9 +21,7 @@ public class EmailVerificationController {
 
     @GetMapping
     public ResponseEntity<Map<String, String>> verifyEmail(
-            @RequestParam("token") String token,
-            @RequestParam("id") String id
-    ) {
+            @RequestParam("token") String token, @RequestParam("id") String id) {
         Map<String, String> response;
         if (userCommonService.verifyEmail(token, id)) {
             response = Map.of("message", "Email verified successfully");
@@ -36,13 +35,9 @@ public class EmailVerificationController {
     public ResponseEntity<Map<String, String>> resendVerificationEmail(@RequestBody EmailVerificationRequest request) {
         var user = userCommonService.getUserByEmail(request.email());
         userEventProducer.produceUserEmailVerifiedEvent(new UserEmailVerificationPayload(
-                user.getId(),
-                user.getEmail(),
-                user.getProfile().getFullName()
-        ));
+                user.getId(), user.getEmail(), user.getProfile().getFullName()));
         return ResponseEntity.ok(Map.of("message", "Verification email sent successfully"));
     }
 
-    public record EmailVerificationRequest(String email) {
-    }
+    public record EmailVerificationRequest(String email) {}
 }

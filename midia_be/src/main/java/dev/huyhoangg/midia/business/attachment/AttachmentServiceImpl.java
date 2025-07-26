@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -49,7 +50,6 @@ public class AttachmentServiceImpl implements AttachmentService {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("File is empty");
         }
-
         var filename = file.getOriginalFilename();
 
         if (filename == null || filename.isBlank()) {
@@ -66,12 +66,25 @@ public class AttachmentServiceImpl implements AttachmentService {
             if (folderName.equals("images/")) {
                 return createAttachmentForImage(id, currentUserUid, folderName, extension, contentType, inputStream);
             }
-
+            if (folderName.equals("videos/")) {
+                return createAttachmentForVideo(id, currentUserUid, folderName, extension, contentType, inputStream);
+            }
             throw new IllegalArgumentException("Unsupported file type");
         } catch (IOException e) {
             log.error("Failed to upload file", e);
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public Attachment getAttachment(String id) {
+        return attachmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Attachment not found"));
+    }
+
+    @Override
+    public List<Attachment> getAttachmentsByPostId(String postId) {
+        return attachmentRepository.findByPostId(postId);
     }
 
     @Async("asyncExecutor")
@@ -82,16 +95,42 @@ public class AttachmentServiceImpl implements AttachmentService {
         var buffer = inputStream.readAllBytes();
         var originalFuture = objectStorageService.put(
                 appendExtension(baseKey, extension), new ByteArrayInputStream(buffer), contentType);
-        var user = new User();
-        user.setUid(userUid);
 
         return originalFuture.thenApply(originalKey -> {
             attachmentEventProducer.sendAttachmentCreatedEvent(new AttachmentCreatedPayload(id, originalKey));
+            User user = new User();
+            user.setUid(userUid);
 
             var attachment = Attachment.builder()
                     .id(id)
                     .originalLink(originalKey)
                     .type(AttachmentType.IMAGE)
+                    .createdBy(user)
+                    .createdAt(Instant.now())
+                    .updatedAt(Instant.now())
+                    .build();
+            return attachmentRepository.save(attachment);
+        });
+    }
+
+    @Async("asyncExecutor")
+    protected CompletableFuture<Attachment> createAttachmentForVideo(
+            String id, String userUid, String folderName, String extension, String contentType, InputStream inputStream)
+            throws IOException {
+        var baseKey = folderName + id;
+        var buffer = inputStream.readAllBytes();
+        var originalFuture = objectStorageService.put(
+                appendExtension(baseKey, extension), new ByteArrayInputStream(buffer), contentType);
+
+        return originalFuture.thenApply(originalKey -> {
+            attachmentEventProducer.sendAttachmentCreatedEvent(new AttachmentCreatedPayload(id, originalKey));
+            User user = new User();
+            user.setUid(userUid);
+
+            var attachment = Attachment.builder()
+                    .id(id)
+                    .originalLink(originalKey)
+                    .type(AttachmentType.VIDEO)
                     .createdBy(user)
                     .createdAt(Instant.now())
                     .updatedAt(Instant.now())

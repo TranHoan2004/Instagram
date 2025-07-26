@@ -1,4 +1,4 @@
-<created_at>: datetime .
+<created_at>: datetime @index(hour) .
 <deleted_at>: datetime @index(hour) .
 <id>: string @index(exact) @upsert .
 <updated_at>: datetime .
@@ -22,8 +22,9 @@
 <user.role>: uid .
 <user.social_accounts>: [uid] .
 <user.stats>: uid .
-<user.user_name>: string @index(trigram, hash) .
+<user.user_name>: string @index(trigram, exact) .
 <user.posts>: [uid] .
+<user.last_login_at>: datetime .
 
 <user_profile.avatar_url>: string .
 <user_profile.bio>: string .
@@ -48,6 +49,7 @@
 <post.visibility>: string .
 <post.author>: uid .
 <post.attachments>: [uid] .
+<post.comments>: [uid] .
 <post.total_likes> : int .
 <post.total_comments> : int .
 
@@ -56,12 +58,34 @@
 <attachment.type>: string .
 <attachment.created_by>: uid .
 
+<comment.content>: string .
+<comment.author>: uid .
+<comment.post>: uid .
+<comment.parent>: uid .
+<comment.replies>: [uid] .
+<comment.total_likes>: int .
+<comment.liked_by>: [uid] .
+
 type <Attachment> {
     id
     attachment.original_link
     attachment.optimized_links
     attachment.type
     attachment.created_by
+    created_at
+    updated_at
+    deleted_at
+}
+
+type <Comment> {
+    id
+    comment.content
+    comment.author
+    comment.post
+    comment.parent
+    comment.replies
+    comment.total_likes
+	comment.liked_by
     created_at
     updated_at
     deleted_at
@@ -80,6 +104,7 @@ type <Post> {
 	post.visibility
 	post.author
 	post.attachments
+	post.comments
 	post.total_likes
 	post.total_comments
 }
@@ -112,6 +137,7 @@ type <User> {
 	user.stats
 	user.profile
 	user.posts
+	user.last_login_at
 }
 
 type <UserProfile> {

@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { Image } from '@heroui/react';
+import { useState } from 'react'
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { Image } from '@heroui/react'
 
 interface PostImageCarouselProps {
-  image: string | string[];
-  alt?: string;
-  className?: string;
-  onImageChange?: (index: number) => void;
+  image: string | string[] | undefined
+  alt?: string
+  className?: string
+  onImageChange?: (index: number) => void
 }
 
 const PostImageCarousel = ({
@@ -15,38 +15,40 @@ const PostImageCarousel = ({
   className = '',
   onImageChange
 }: PostImageCarouselProps) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0)
 
-  const isMultiple = Array.isArray(image);
-  const images = isMultiple ? image : [image];
+  const isMultiple = Array.isArray(image)
+  const images = isMultiple ? image : [image]
 
   const handlePrevious = () => {
-    const newIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
-    setCurrentIndex(newIndex);
-    onImageChange?.(newIndex);
-  };
+    const newIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1
+    setCurrentIndex(newIndex)
+    onImageChange?.(newIndex)
+  }
 
   const handleNext = () => {
-    const newIndex = currentIndex === images.length - 1 ? 0 : currentIndex + 1;
-    setCurrentIndex(newIndex);
-    onImageChange?.(newIndex);
-  };
+    const newIndex = currentIndex === images.length - 1 ? 0 : currentIndex + 1
+    setCurrentIndex(newIndex)
+    onImageChange?.(newIndex)
+  }
 
   const handleIndicatorClick = (index: number) => {
-    setCurrentIndex(index);
-    onImageChange?.(index);
-  };
+    setCurrentIndex(index)
+    onImageChange?.(index)
+  }
 
-  if (!images.length) return null;
+  if (!images.length) return null
 
   return (
-    <div className={`w-full aspect-square overflow-hidden rounded ${className}`}>
+    <div
+      className={`w-full max-h-[600px] overflow-hidden rounded ${className}`}
+    >
       <div className="relative w-full h-full">
         <Image
           src={images[currentIndex]}
           alt={alt}
           radius="none"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
         />
 
         {images.length > 1 && (
@@ -75,7 +77,9 @@ const PostImageCarousel = ({
                   key={`indicator-${index}`}
                   onClick={() => handleIndicatorClick(index)}
                   className={`w-2 h-2 rounded-full transition-opacity ${
-                    index === currentIndex ? 'bg-white opacity-100' : 'bg-white opacity-50'
+                    index === currentIndex
+                      ? 'bg-white opacity-100'
+                      : 'bg-white opacity-50'
                   }`}
                   aria-label={`Go to image ${index + 1}`}
                   type="button"
@@ -86,7 +90,7 @@ const PostImageCarousel = ({
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default PostImageCarousel;
+export default PostImageCarousel

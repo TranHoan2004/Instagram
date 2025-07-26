@@ -2,10 +2,13 @@ package dev.huyhoangg.midia.infrastructure.kafka.producer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import dev.huyhoangg.midia.business.user.UserEvent;
 import dev.huyhoangg.midia.business.user.UserEventProducer;
 import dev.huyhoangg.midia.domain.event.UserEmailVerificationPayload;
+import dev.huyhoangg.midia.domain.event.PasswordResetPayload;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +22,15 @@ public class KafkaUserEventProducer implements UserEventProducer {
     public void produceUserEmailVerifiedEvent(UserEmailVerificationPayload payload) {
         try {
             kafkaTemplate.send(UserEvent.USER_EMAIL_VERIFY, objectMapper.writeValueAsBytes(payload));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void producePasswordResetEvent(PasswordResetPayload payload) {
+        try {
+            kafkaTemplate.send(UserEvent.PASSWORD_RESET, objectMapper.writeValueAsBytes(payload));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

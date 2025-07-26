@@ -192,10 +192,12 @@ public class QueryBuilder {
 
     private void validateBuilderState() {
         if (type == null && (rootUids == null || rootUids.length == 0)) {
-            throw new IllegalStateException("Query must specify either a root type with 'forType()' or UIDs with 'withUids()'.");
+            throw new IllegalStateException(
+                    "Query must specify either a root type with 'forType()' or UIDs with 'withUids()'.");
         }
         if (type != null && !isDgraphNode(type)) {
-            throw new IllegalArgumentException("Root class for 'forType()' must be annotated with @DgraphNode: " + type.getName());
+            throw new IllegalArgumentException(
+                    "Root class for 'forType()' must be annotated with @DgraphNode: " + type.getName());
         }
         if (queryName == null || queryName.isBlank()) {
             this.queryName = "q"; // Default query name if not set
@@ -203,7 +205,8 @@ public class QueryBuilder {
     }
 
     // Recursive helper method to build nested predicates
-    private String buildPredicateString(Class<?> currentType, int currentDepth, int maxDepth, Set<Class<?>> visitedTypes) {
+    private String buildPredicateString(
+            Class<?> currentType, int currentDepth, int maxDepth, Set<Class<?>> visitedTypes) {
         // Base case 1: Depth limit reached
         if (currentDepth > maxDepth) {
             return "uid"; // Just fetch UID if depth limit is reached
@@ -241,7 +244,10 @@ public class QueryBuilder {
                     // If generic type can't be determined or it's a raw collection type,
                     // treat it as a simple predicate without further eager fetching for now.
                     if (relationshipTargetType == null) {
-                        System.err.println("Warning: Could not determine simple Class type for generic collection field: " + field.getName() + " in " + currentType.getName() + ". Fetching as direct predicate.");
+                        System.err.println(
+                                "Warning: Could not determine simple Class type for generic collection field: "
+                                        + field.getName() + " in " + currentType.getName()
+                                        + ". Fetching as direct predicate.");
                         predicateJoiner.add(predicate);
                         continue; // Move to next field if generic type not found/handled
                     }
@@ -250,16 +256,21 @@ public class QueryBuilder {
                 }
 
                 if (relationshipTargetType != null && !isDgraphNode(relationshipTargetType)) {
-                    throw new IllegalArgumentException("Relationship target class " + relationshipTargetType.getName() + " for field " + field.getName() + " in " + currentType.getName() + " is not annotated with @DgraphNode. Please ensure all related Dgraph nodes are correctly marked.");
+                    throw new IllegalArgumentException(
+                            "Relationship target class " + relationshipTargetType.getName() + " for field "
+                                    + field.getName() + " in " + currentType.getName()
+                                    + " is not annotated with @DgraphNode. Please ensure all related Dgraph nodes are correctly marked.");
                 }
 
                 if (isEagerFetch(field)) {
                     // Recursive call for eager fetching
-                    String subPredicates = buildPredicateString(relationshipTargetType, currentDepth + 1, maxDepth, visitedTypes);
+                    String subPredicates =
+                            buildPredicateString(relationshipTargetType, currentDepth + 1, maxDepth, visitedTypes);
                     if (!subPredicates.isBlank()) {
                         predicateJoiner.add(String.format("%s { %s }", predicate, subPredicates));
                     } else {
-                        // If sub-predicates are empty (e.g., due to depth limit or cycle), just add the predicate itself
+                        // If sub-predicates are empty (e.g., due to depth limit or cycle), just add the predicate
+                        // itself
                         predicateJoiner.add(predicate);
                     }
                 } else {
@@ -318,6 +329,3 @@ public class QueryBuilder {
         return isCollectionType || isMapType || isArrayType;
     }
 }
-
-
-

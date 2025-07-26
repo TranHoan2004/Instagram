@@ -4,4 +4,4 @@ public enum PostVisibility {
     PUBLIC,
     PRIVATE,
     FRIENDS_ONLY
-} 
+}

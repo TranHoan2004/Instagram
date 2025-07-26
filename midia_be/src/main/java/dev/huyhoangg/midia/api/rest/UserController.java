@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -37,14 +38,16 @@ public class UserController {
             @RequestParam(value = "avatar", required = false) MultipartFile file,
             @RequestParam("userId") String userId
     ) throws IOException {
-        var avatarUrl = file != null ? getAvatarUrl(file) : null;
+        var objectKey = file != null ? uploadAvatar(file) : null;
         userCommonService.editUserProfile(userId, UserProfile.builder()
                 .bio(null)
                 .phoneNumber(null)
                 .fullName(null)
                 .gender(null)
-                .avatarUrl(avatarUrl)
+                .avatarUrl(objectKey)
                 .build());
+
+        var avatarUrl = getAvatarUrl(userId);
 
         return ResponseEntity.ok(Map.of(
                 "success", true,
@@ -52,9 +55,19 @@ public class UserController {
                 "message", "File uploaded successfully"));
     }
 
-    private String getAvatarUrl(MultipartFile file) throws IOException {
-        CompletableFuture<String> future = csService.put(file.getOriginalFilename(), file.getInputStream(), file.getContentType());
-        var objectKey = future.join();
-        return csService.getObjectUrl(objectKey);
+    private String uploadAvatar(MultipartFile file) throws IOException {
+        var objectKey = "images/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
+        CompletableFuture<String> future = csService.put(
+                objectKey,
+                file.getInputStream(),
+                file.getContentType());
+        return future.join();
+    }
+
+    private String getAvatarUrl(String userId) {
+        var user = userCommonService.getUserProfile(userId);
+        var objectKey = user.getAvatarUrl();
+        return (objectKey != null && !objectKey.startsWith("https")) ?
+                csService.getObjectUrl(objectKey) : objectKey;
     }
 }

@@ -1,6 +1,7 @@
 package dev.huyhoangg.midia.dgraph.query;
 
 import dev.huyhoangg.midia.domain.model.user.User;
+
 import org.junit.jupiter.api.Test;
 
 class QueryBuilderTest {
@@ -11,8 +12,7 @@ class QueryBuilderTest {
                 .queryName("test")
                 .queryParams(
                         new QueryParams("$email", QueryParamType.STRING),
-                        new QueryParams("$total_posts", QueryParamType.INT)
-                )
+                        new QueryParams("$total_posts", QueryParamType.INT))
                 .forType(User.class)
                 .filterEquals("user_credential.email", "$email")
                 .filterGreaterThan("user_stats.total_posts", "$total_posts")
@@ -28,8 +28,7 @@ class QueryBuilderTest {
                 .queryName("test")
                 .queryParams(
                         new QueryParams("$email", QueryParamType.STRING),
-                        new QueryParams("$total_posts", QueryParamType.INT)
-                )
+                        new QueryParams("$total_posts", QueryParamType.INT))
                 .forType(User.class)
                 .filterEquals("user_credential.email", "$email")
                 .filterGreaterThan("user_stats.total_posts", "$total_posts")

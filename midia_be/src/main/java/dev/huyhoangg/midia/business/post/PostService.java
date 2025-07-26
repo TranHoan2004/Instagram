@@ -11,4 +11,8 @@ public interface PostService {
     CreatePostResp createPost(CreatePostInput input);
 
     Connection<Post> getPostsByAuthorId(String authorId, Integer first, String after, SortDirection sortDirection);
+
+    Post getPost(String postId);
+
+    Connection<Post> getNewsFeedByUserId(String userId, Integer first, Integer offset);
 }

@@ -127,6 +127,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         var userProfile = UserProfile.builder().fullName(name).build();
         var socialAccount = SocialAccount.builder()
                 .provider(provider)
+                .sub(oAuth2UserInfo.getId())
                 .linkedAt(Instant.now())
                 .build();
         username = userRepository
